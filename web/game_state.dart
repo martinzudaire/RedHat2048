@@ -1,5 +1,6 @@
+library game_state;
 
-import 'Grid.dart';
+import 'grid.dart';
 
 ///
 /// GAMESTATE
@@ -50,7 +51,7 @@ class GameState {
   int getScore() => _score;
   int getPoints() => _points;
   int getMoves() => _moves;
-  bool getMoved() => _moved;
-  bool getOver() => _over;
-  bool getWon() => _won;
+  bool hasMoved() => _moved;
+  bool isOver() => _over;
+  bool isWon() => _won;
 }

@@ -1,3 +1,4 @@
+library grid;
 
 import 'Matrix.dart';
 
@@ -19,6 +20,7 @@ class Grid {
   Grid.fromJSON(String json) {
     _grid = Matrix.parseMatrix(json, 4, 4);
   }
+  
   
   //Get & Set methods
   

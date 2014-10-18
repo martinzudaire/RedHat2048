@@ -1,7 +1,13 @@
-import 'Game.dart';
 
-void main() 
-{
-  Game game = new Game();
-  game.start();
+import 'dart:html';
+import 'game.dart';
+import 'move.dart';
+
+void main() {
+
+  Game.newGame();
+  
+  querySelector('#text_id').text = "hi there";
+  
+  
 }

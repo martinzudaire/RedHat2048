@@ -1,52 +1,68 @@
-library Game;
-import 'WebRequest.dart';
-import 'Matrix.dart';
+library game;
 
-class Game
-{
+import 'web_request.dart';
+import 'game_state.dart';
+import 'move.dart';
+
+///
+/// GAME
+/// 
+/// Singleton.
+///
+///
+
+class Game {
+  
+  static final Game _instance = new Game._internal();
+  
   WebRequest webRequest;
-  Matrix grid;
-  int score,points,moves;
-  bool moved,over,won;
-  String sessionId;
-  static int UP = 0;
-  static int RIGHT = 1;
-  static int DOWN = 2;
-  static int LEFT = 3;
+  GameState _currentGameState;
+  bool _playersTurn;
   
-  Game()
-  {
-    this.webRequest = new WebRequest(this);
+  factory Game() {
+    return _instance;
   }
   
-  void start()
-  {
-    this.webRequest.getFirstState();
+  // Private constructor
+  Game._internal() {
+    this.webRequest = new WebRequest();
+    this._currentGameState = new GameState(); 
+    this._playersTurn = false;
   }
   
-  void solve()
-  {
-    this.grid.printMatrix();
+  
+  // PUBLIC STATIC methods
+  static void newGame() => _instance._newGame();
+  static void move(Move move) => _instance._move(move);
+  static void notifyUpdate() => _instance._notifyUpdate();
+  static GameState getCurrentGameState() => _instance._getCurrentGameState();
     
-    if(this.won == false && this.over == false)
-    {
-      //we always begin with (0,0) occupied by something, we make sure with this
-      if(this.moves < 2 && this.grid.getElement(0, 0) == 0)
-      {
-        if(this.moves == 0)
-        {
-          this.webRequest.postMove(UP);
-        } else
-        {
-          this.webRequest.postMove(LEFT);
-        }
-        return;
-      }
-        
-    } else
-    {
-      if(this.over == true) print("GAME OVER :(");
-      if(this.won == true) print("We win :D");
+  
+  //
+  // PRIVATE
+  //
+  
+  void _newGame() {
+    this.webRequest.getFirstState();    
+  }
+  
+  void _move(Move move) {
+    this.webRequest.postMove(move);
+    _playersTurn = false;
+  }
+  
+  void _notifyUpdate() {
+    _updateGameState(this.webRequest.getGameState());
+    _playersTurn = true;
+  }
+  
+  GameState _getCurrentGameState() => _currentGameState;
+  
+  //Helpers
+  void _updateGameState(GameState gs) {
+    if (gs!=null) {
+      _currentGameState = gs;
     }
   }
+  
 }
