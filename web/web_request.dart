@@ -10,8 +10,8 @@ import 'move.dart';
 ///
 /// WEBREQUEST
 /// 
-/// Async.
-///
+/// Async. Handles all the JSON. 
+/// Notifies Game when it receives and parses the json from the server.
 ///
 
 
@@ -122,8 +122,6 @@ class WebRequest {
     _lastGameState = new GameState.fromJSON(grid, score, points, moves, moved, over, won);
     
     Game.notifyUpdate();
-    
-    print(_sessionId);
   }
   
 }

@@ -8,7 +8,7 @@ import 'observer.dart';
 ///
 /// GAME
 /// 
-/// Singleton.
+/// Singleton. Notifies observers when it gets an update from WebRequest.
 ///
 ///
 
@@ -66,6 +66,8 @@ class Game {
     _updateGameState(this.webRequest.getGameState());
     _notifyObservers();
     _playersTurn = true;
+    
+    print("notified");
   }
   
   

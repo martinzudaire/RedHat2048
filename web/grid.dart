@@ -1,11 +1,11 @@
 library grid;
 
-import 'Matrix.dart';
+import 'matrix.dart';
 
 ///
 /// GRID
 /// 
-/// 4x4 matrix
+/// Grid representation. 4x4 matrix.
 /// 
 ///
 

@@ -1,7 +1,13 @@
-library Matrix;
+library matrix;
 
-class Matrix
-{
+///
+/// MATRIX
+/// 
+/// Wut is dis?
+///
+///
+
+class Matrix {
   List<List<int>> array;
   int nx;
   int ny;
