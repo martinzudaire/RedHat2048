@@ -3,7 +3,6 @@ library grid_view;
 import 'dart:html';
 import 'observer.dart';
 import 'game.dart';
-import 'game_state.dart';
 import 'grid.dart';
 
 ///
