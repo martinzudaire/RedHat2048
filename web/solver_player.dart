@@ -6,7 +6,7 @@ import 'move.dart';
 import 'dart:html';
 
 ///
-/// GAME PLAYER
+/// SOLVER PLAYER
 /// 
 /// Play 2048 ^^
 ///
@@ -28,11 +28,8 @@ class SolverPlayer extends GameSolver {
     });    
   }
   
-  void getNextMove() {
+  void move() {
     //No AI, so do nothing.
   }
   
-  void notify() {
-    //Do nothing
-  }
 }

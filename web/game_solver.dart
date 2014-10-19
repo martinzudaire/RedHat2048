@@ -12,8 +12,10 @@ import 'observer.dart';
 
 abstract class GameSolver implements Observer {
   
-  void getNextMove();
+  void move();
 
-  void notify();
+  void notify() {
+    move();
+  }
   
 }

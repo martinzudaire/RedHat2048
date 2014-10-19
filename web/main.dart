@@ -5,6 +5,7 @@ import 'game_solver.dart';
 
 //Add solvers here
 import 'solver_player.dart';
+import 'solver_random.dart';
 
 ///
 /// MAIN
@@ -16,7 +17,7 @@ import 'solver_player.dart';
 void main() {
   
   GridView gridView = new GridView();
-  GameSolver solver = new SolverPlayer(); //Change this to custom game solver
+  GameSolver solver = new SolverRandom(); //Change this to custom game solver
   
   Game.addObserver(gridView);
   Game.addObserver(solver);
