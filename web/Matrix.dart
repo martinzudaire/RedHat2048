@@ -67,4 +67,17 @@ class Matrix {
   {
     print(this.array.toString());
   }
+  
+  Matrix clone() 
+  {
+    Matrix mat = new Matrix.fromZero(this.nx, this.ny);
+    for(int i=0; i<this.nx; i++)
+    {
+      for(int j=0; j<this.ny; j++)
+      {
+        mat.setElement(this.getElement(i,j), i, j);
+      }
+    }
+    return mat;
+  }
 }

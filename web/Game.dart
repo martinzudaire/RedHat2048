@@ -66,8 +66,6 @@ class Game {
     _updateGameState(this.webRequest.getGameState());
     _notifyObservers();
     _playersTurn = true;
-    
-    print("notified");
   }
   
   

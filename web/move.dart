@@ -19,5 +19,9 @@ class Move {
   }
   
   toString() => _value.toString();  
-   
+  
+  int getValue()
+  {
+    return this._value;
+  }
 }

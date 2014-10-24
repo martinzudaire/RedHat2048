@@ -9,6 +9,7 @@ import 'game_solver.dart';
 //Add solvers here
 import 'solver_player.dart';
 import 'solver_random.dart';
+import 'solver_gradient.dart';
 
 ///
 /// MAIN
@@ -23,7 +24,7 @@ void main() {
   ScoreView scoreView = new ScoreView();
   PointsView pointsView = new PointsView();
   MovesView movesView = new MovesView();
-  GameSolver solver = new SolverPlayer(); //Change this to custom game solver
+  GameSolver solver = new SolverGradient(); //Change this to custom game solver
   
   Game.addObserver(gridView);
   Game.addObserver(scoreView);
