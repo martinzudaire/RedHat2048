@@ -54,4 +54,5 @@ class GameState {
   bool hasMoved() => _moved;
   bool isOver() => _over;
   bool isWon() => _won;
+ 
 }

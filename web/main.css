@@ -27,3 +27,11 @@ h1, p {
   font-size: 28px;
   background-color: #ffffee;
 }
+
+#game_over_id {
+  display: none;
+}
+
+#you_win_id {
+  display: none;
+}

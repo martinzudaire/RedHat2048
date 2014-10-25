@@ -1,6 +1,7 @@
 library game_solver;
 
 import 'observer.dart';
+import 'game.dart';
 
 ///
 /// GAME SOLVER
@@ -15,7 +16,7 @@ abstract class GameSolver implements Observer {
   void move();
 
   void notify() {
-    move();
+    if (!Game.getCurrentGameState().isOver()) move();
   }
   
 }

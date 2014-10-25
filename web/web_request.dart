@@ -1,10 +1,10 @@
 library web_request;
 
 import 'dart:html';
-import 'game.dart';
 import 'game_state.dart';
 import 'grid.dart';
 import 'move.dart';
+import 'observer.dart';
 
 
 ///
@@ -23,9 +23,12 @@ class WebRequest {
   String _sessionId;
   GameState _lastGameState;
   
+  List<Observer> _listObservers;
+  
   WebRequest() {
-    _sessionId = null;
-    _lastGameState = null;
+    this._sessionId = null;
+    this._lastGameState = null;
+    this._listObservers = new List<Observer>();
   }
   
   void getFirstState() {    
@@ -55,6 +58,25 @@ class WebRequest {
   }
   
   GameState getGameState() => _lastGameState;
+  
+  //Observable methods
+  void addObserver(Observer o) {
+    if (o!=null) {
+      _listObservers.add(o);
+    }
+  }
+  
+  void removeObserver(Observer o) {
+    if (o!=null) {
+      _listObservers.remove(o);
+    }
+  }
+  
+  void notifyObservers() {
+    for (Observer o in _listObservers) {
+      o.notify();
+    }
+  }
   
   
   //PRIVATE
@@ -121,7 +143,7 @@ class WebRequest {
     
     _lastGameState = new GameState.fromJSON(grid, score, points, moves, moved, over, won);
     
-    Game.notifyUpdate();
+    notifyObservers();
   }
   
 }

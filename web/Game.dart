@@ -1,6 +1,7 @@
 library game;
 
 import 'web_request.dart';
+import 'game_logic.dart';
 import 'game_state.dart';
 import 'move.dart';
 import 'observer.dart';
@@ -12,7 +13,7 @@ import 'observer.dart';
 ///
 ///
 
-class Game {
+class Game implements Observer {
   
   static final Game _instance = new Game._internal();
   
@@ -32,6 +33,8 @@ class Game {
     this._currentGameState = new GameState(); 
     this._playersTurn = false;
     this._listObservers = new List<Observer>();
+    
+    this.webRequest.addObserver(this);
   }
   
   
@@ -39,10 +42,12 @@ class Game {
   static void newGame() => _instance._newGame();
   static void move(Move move) => _instance._move(move);
   static GameState getCurrentGameState() => _instance._getCurrentGameState();
-  static void notifyUpdate() => _instance._notifyUpdate();
   
   static void addObserver(Observer o) => _instance._addObserver(o);
   static void removeObserver(Observer o) => _instance._removeObserver(o);
+  
+  // PUBLIC NON STATIC methods  
+  void notify() => _notify();
     
   
   //
@@ -62,7 +67,7 @@ class Game {
 
   
   //WebRequest calls this when it pulls the latest gamestate from the server
-  void _notifyUpdate() {
+  void _notify() {
     _updateGameState(this.webRequest.getGameState());
     _notifyObservers();
     _playersTurn = true;
