@@ -29,7 +29,7 @@ class Game implements Observer {
   
   // Private constructor
   Game._internal() {
-    this.webRequest = new WebRequest();
+    this.webRequest = new WebRequest();  // <--- Create either WebRequest or GameLogic
     this._currentGameState = new GameState(); 
     this._playersTurn = false;
     this._listObservers = new List<Observer>();

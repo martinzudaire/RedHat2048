@@ -8,7 +8,7 @@ import 'game_logic.dart';
 import 'game_state.dart';
 
 ///
-/// SOLVER ALPHA1
+/// SOLVER MOST POINTS FIRST
 /// 
 /// 
 ///
@@ -33,13 +33,15 @@ class SolverMostPointsFirst extends GameSolver {
     
     List<Move> movesMaxPoints = new List<Move>();
 
-    if (gsLeft.getPoints()==maxPoints) movesMaxPoints.add(Move.left);
-    if (gsRight.getPoints()==maxPoints) movesMaxPoints.add(Move.right);
-    if (gsUp.getPoints()==maxPoints) movesMaxPoints.add(Move.up);
-    if (gsDown.getPoints()==maxPoints) movesMaxPoints.add(Move.down);
+    if (gsLeft.getPoints()==maxPoints && gsLeft.hasMoved()) movesMaxPoints.add(Move.left);
+    if (gsRight.getPoints()==maxPoints && gsRight.hasMoved()) movesMaxPoints.add(Move.right);
+    if (gsUp.getPoints()==maxPoints && gsUp.hasMoved()) movesMaxPoints.add(Move.up);
+    if (gsDown.getPoints()==maxPoints && gsDown.hasMoved()) movesMaxPoints.add(Move.down);
     
     Random r = new Random();
     Move randomMove = movesMaxPoints[r.nextInt(movesMaxPoints.length)];
+    
+    print(randomMove.getValue());
     
     Game.move(randomMove);
     

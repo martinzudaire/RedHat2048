@@ -52,7 +52,7 @@ class GameLogic implements WebRequest {
   
   
   GameState simulateMove(GameState gameState, Move move) {
-    return _processGameState(gameState, move);
+    return _processGameState(gameState.clone(), move);
   }
   
   
