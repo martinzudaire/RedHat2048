@@ -41,8 +41,6 @@ class SolverMostPointsFirst extends GameSolver {
     Random r = new Random();
     Move randomMove = movesMaxPoints[r.nextInt(movesMaxPoints.length)];
     
-    print(randomMove.getValue());
-    
     Game.move(randomMove);
     
   }

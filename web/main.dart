@@ -27,7 +27,7 @@ void main() {
   PointsView pointsView = new PointsView();
   MovesView movesView = new MovesView();
   GameOverView gameOverView = new GameOverView();
-  GameSolver solver = new SolverMostPointsFirst(); //Change this to custom game solver
+  GameSolver solver = new SolverGradient(); //Change this to custom game solver
   
   Game.addObserver(gridView);
   Game.addObserver(scoreView);
