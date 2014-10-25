@@ -72,6 +72,8 @@ class GridIterator {
     } else if (_direction == Move.down) {
       return _grid.getElement(3-_cell, _row);
     }
+    
+    return -1;
   }
   
   void setCellValue(int value) {
