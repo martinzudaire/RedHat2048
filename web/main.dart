@@ -12,6 +12,7 @@ import 'solver_player.dart';
 import 'solver_random.dart';
 import 'solver_gradient.dart';
 import 'solver_most_points_first.dart';
+import 'solver_decrecimiento.dart';
 
 ///
 /// MAIN
@@ -27,7 +28,7 @@ void main() {
   PointsView pointsView = new PointsView();
   MovesView movesView = new MovesView();
   GameOverView gameOverView = new GameOverView();
-  GameSolver solver = new SolverGradient(); //Change this to custom game solver
+  GameSolver solver = new SolverDecrecimiento(); //Change this to custom game solver
   
   Game.addObserver(gridView);
   Game.addObserver(scoreView);
