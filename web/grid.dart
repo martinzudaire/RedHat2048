@@ -1,6 +1,5 @@
 library grid;
 
-import 'move.dart';
 import 'matrix.dart';
 
 ///

@@ -45,6 +45,10 @@ class GameState {
     this._won = won;
   }
   
+  GameState clone() {
+    return new GameState.fromJSON(_grid.clone(), _score, _points, _moves, _moved, _over, _won);
+  }
+  
   // Get methods
   
   Grid getGrid() => _grid;

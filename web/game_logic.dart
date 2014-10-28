@@ -44,15 +44,16 @@ class GameLogic implements WebRequest {
   
   void postMove(Move move) {
     _lastGameState = _processGameState(_lastGameState, move);
-    _addRandomNumberToGrid(_lastGameState.getGrid());
     notifyObservers();
   }
   
   GameState getGameState() => _lastGameState;
   
   
+  
+  
   GameState simulateMove(GameState gameState, Move move) {
-    return _processGameState(gameState, move);
+    return _simulateMove(gameState, move);
   }
   
   
@@ -87,20 +88,34 @@ class GameLogic implements WebRequest {
     return gameState;
   }
   
-  //_processNewRandomNumber()
-  void _processNewRandomNumber(GameState gameState) {
-    _addRandomNumberToGrid(gameState.getGrid());
-  }
-  
   
   //_processGameState()
-  GameState _processGameState(GameState gameState, Move move) {
+  GameState _processGameState(GameState gameState, Move move) {    
+    GameState gs = _processGameStateHelper(gameState.clone(), move); 
+    _addRandomNumberToGrid(gs.getGrid());
+    
+    //Check if game is over!
+    return new GameState.fromJSON(gs.getGrid(), gs.getScore(), gs.getPoints(), gs.getMoves(), gs.hasMoved(), isGameOver(gs), gs.isWon());
+  }   
+  
+  
+  //_simulateMove()
+  GameState _simulateMove(GameState gameState, Move move) {    
+    GameState gs = _processGameStateHelper(gameState.clone(), move); 
+    
+    //Check if game is over!
+    return new GameState.fromJSON(gs.getGrid(), gs.getScore(), gs.getPoints(), gs.getMoves(), gs.hasMoved(), isGameOver(gs), gs.isWon());
+  } 
+  
+  
+  //_processGameStateHelper()
+  // Calculates next GameState. Does not calculate if game is over!
+  GameState _processGameStateHelper(GameState gameState, Move move) {
 
     GridIterator iterator = new GridIterator(gameState.getGrid(), move);
     GridIterator iteratorHelper = new GridIterator(gameState.getGrid(), move);
     bool moved = false;
     bool won = false;
-    bool over = false;
     int points = 0; 
     
     while (!iterator.isRowDone()) {
@@ -151,13 +166,23 @@ class GameLogic implements WebRequest {
       iterator.firstCell();
       iteratorHelper.nextRow();
       iteratorHelper.firstCell();
-    }    
-
-    over = (won || _getNumberOfEmptyCells(gameState.getGrid()) <= 1);
-    
-    return new GameState.fromJSON(gameState.getGrid(), gameState.getScore()+points, points, gameState.getMoves()+1, moved, over, won);
-     
+    }        
+       
+    //Does not check if game is over!    
+    return new GameState.fromJSON(gameState.getGrid(), gameState.getScore()+points, points, gameState.getMoves()+1, moved, false, won);     
   }
+
+  
+  //Checks if game is over
+  bool isGameOver(GameState gameState) {
+    bool over;
+    GameState gsLeft = _processGameStateHelper(gameState.clone(), Move.left);
+    GameState gsRight = _processGameStateHelper(gameState.clone(), Move.right);
+    GameState gsUp = _processGameStateHelper(gameState.clone(), Move.up);
+    GameState gsDown = _processGameStateHelper(gameState.clone(), Move.down);
+    
+    return (gameState.isWon() || !(gsLeft.hasMoved() || gsRight.hasMoved() || gsUp.hasMoved() || gsDown.hasMoved()));    
+  }  
   
   
   //_addRandomNumberToGrid()
