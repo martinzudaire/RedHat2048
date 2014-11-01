@@ -25,7 +25,7 @@ class SolverGradient extends GameSolver {
     moveGrid.simulateMoveUp();
     if(moveGrid.compareGrid(testGrid) != 0)
     {
-      gradientes.add(this.calculateGradient(moveGrid));
+      gradientes.add(this.calculateGradient2(moveGrid));
       moveList.add(Move.up);
       count++;
     }
@@ -34,7 +34,7 @@ class SolverGradient extends GameSolver {
     moveGrid.simulateMoveDown();
     if(moveGrid.compareGrid(testGrid) != 0)
     {
-      gradientes.add(this.calculateGradient(moveGrid));
+      gradientes.add(this.calculateGradient2(moveGrid));
       moveList.add(Move.down);
       count++;
     }
@@ -43,7 +43,7 @@ class SolverGradient extends GameSolver {
     moveGrid.simulateMoveRight();
     if(moveGrid.compareGrid(testGrid) != 0)
     {
-      gradientes.add(this.calculateGradient(moveGrid));
+      gradientes.add(this.calculateGradient2(moveGrid));
       moveList.add(Move.right);
       count++;
     }
@@ -52,7 +52,7 @@ class SolverGradient extends GameSolver {
     moveGrid.simulateMoveLeft();
     if(moveGrid.compareGrid(testGrid) != 0)
     {
-      gradientes.add(this.calculateGradient(moveGrid));
+      gradientes.add(this.calculateGradient2(moveGrid));
       moveList.add(Move.left);
       count++;
     }
@@ -76,7 +76,7 @@ class SolverGradient extends GameSolver {
     }
   }
   
-  double calculateGradient(Grid grid)
+  double calculateGradient1(Grid grid)
   {
     double gradient = 0.0;
     int count = 0;
@@ -106,6 +106,76 @@ class SolverGradient extends GameSolver {
           } else
           {
             gradient += (logaritmo(grid.getElement(i, j)) - logaritmo(grid.getElement(i+1,j)))/count;
+          }
+        }
+      }
+    }
+    return gradient;
+  }
+
+  
+  double calculateGradient2(Grid grid)
+  {
+    double gradient = 0.0;
+    int count = 0;
+    for(int i=0; i<4; i++)
+    {
+      if(i%2 == 0)
+      {
+        for(int j=0; j<3; j++)
+        {
+          count++;
+          if(grid.getElement(i, j) == 0)
+          {
+            return gradient;
+          }
+          if(j<3)
+          {
+            if(grid.getElement(i, j) >= grid.getElement(i, j+1))
+            {
+              gradient = gradient + 1.0;
+            } else
+            {
+              return gradient;
+            }
+          } else
+          {
+            if(grid.getElement(i, j) >= grid.getElement(i+1, j))
+            {
+              gradient = gradient + 1.0;
+            } else
+            {
+              return gradient;
+            }
+          }
+        }
+      } else
+      {
+        for(int j=0; j<3; j++)
+        {
+          if(grid.getElement(i, j) == 0)
+          {
+            return gradient;
+          }
+          count++;
+          if(j<3)
+          {
+            if(grid.getElement(i, j) >= grid.getElement(i, j-1))
+            {
+              gradient = gradient + 1.0;
+            } else
+            {
+              return gradient;
+            }
+          } else
+          {
+            if(grid.getElement(i, j) >= grid.getElement(i+1, j))
+            {
+              gradient = gradient + 1.0;
+            } else
+            {
+              return gradient;
+            }
           }
         }
       }
