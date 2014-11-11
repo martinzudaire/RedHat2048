@@ -15,6 +15,8 @@ import 'matrix.dart';
 class SolverDecrecimiento extends GameSolver {
   
   Move globalMove = Move.none;
+  int globalDirectionX = 0;
+  int globalDirectionY = 0;
   
   SolverDecrecimiento() 
   {
@@ -262,10 +264,11 @@ class SolverDecrecimiento extends GameSolver {
     
     if(this.outOfBounds(x+1,y) == false && grid.getElement(x, y) >= grid.getElement(x+1, y)) //derecha
     {
+      this.factor(1, 0, first);
       grid.setElement(x, y, max);
       auxList = this.maxDecrecimientosList(grid,x+1,y,false);
       count.add(auxList[0]+1);
-      addedcount.add(auxList[1]+aux);
+      addedcount.add(auxList[1]+aux*this.factor(1,0,first));
       grid.setElement(x, y, aux);
       if(grid.getElement(x, y) == grid.getElement(x+1, y))
       {
@@ -275,10 +278,11 @@ class SolverDecrecimiento extends GameSolver {
     }
     if(this.outOfBounds(x-1,y) == false && grid.getElement(x, y) >= grid.getElement(x-1, y)) //izquierda
     {
+      this.factor(1, 0, first);
       grid.setElement(x, y, max);
       auxList = this.maxDecrecimientosList(grid,x-1,y,false);
       count.add(auxList[0]+1);
-      addedcount.add(auxList[1]+aux);
+      addedcount.add(auxList[1]+aux*this.factor(1,0,first));
       grid.setElement(x, y, aux);
       if(grid.getElement(x, y) == grid.getElement(x-1, y))
       {
@@ -288,10 +292,11 @@ class SolverDecrecimiento extends GameSolver {
     }
     if(this.outOfBounds(x,y+1) == false && grid.getElement(x, y) >= grid.getElement(x, y+1)) //arriba
     {
+      this.factor(0, 1, first);
       grid.setElement(x, y, max);
       auxList = this.maxDecrecimientosList(grid,x,y+1,false);
       count.add(auxList[0]+1);
-      addedcount.add(auxList[1]+aux);
+      addedcount.add(auxList[1]+aux*this.factor(0,1,first));
       grid.setElement(x, y, aux);
       if(grid.getElement(x, y) == grid.getElement(x, y+1))
       {
@@ -301,10 +306,11 @@ class SolverDecrecimiento extends GameSolver {
     }
     if(this.outOfBounds(x,y-1) == false && grid.getElement(x, y) >= grid.getElement(x, y-1)) //abajo
     {
+      this.factor(0, 1, first);
       grid.setElement(x, y, max);
       auxList = this.maxDecrecimientosList(grid,x,y-1,false);
       count.add(auxList[0]+1);
-      addedcount.add(auxList[1]+aux);
+      addedcount.add(auxList[1]+aux*this.factor(0,1,first));
       grid.setElement(x, y, aux);
       if(grid.getElement(x, y) == grid.getElement(x, y-1))
       {
@@ -420,5 +426,21 @@ class SolverDecrecimiento extends GameSolver {
       }
     }
     return false;
+  }
+  
+  int factor(int x, int y, bool first)
+  {
+    if(first == true)
+    {
+      this.globalDirectionX = x;
+      this.globalDirectionY = y;
+    } else
+    {
+      if(x == this.globalDirectionX && y == this.globalDirectionY)
+      {
+        return 2;
+      }
+    }
+    return 1;
   }
 }
