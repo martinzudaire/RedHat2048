@@ -4,6 +4,7 @@ import 'game_solver.dart';
 import 'game.dart';
 import 'move.dart';
 import 'grid.dart';
+import 'matrix.dart';
 
 ///
 /// SOLVER DECRECIMIENTO
@@ -13,6 +14,8 @@ import 'grid.dart';
 
 class SolverDecrecimiento extends GameSolver {
   
+  Move globalMove = Move.none;
+  
   SolverDecrecimiento() 
   {
     
@@ -21,71 +24,137 @@ class SolverDecrecimiento extends GameSolver {
   void move() 
   {
     Grid testGrid = Game.getCurrentGameState().getGrid().clone(); //this is the current grid getting it from currentGameState
-    Grid moveGrid = testGrid.clone(); //we use this to simulate the moves and not lose the current grid
     int moves = Game.getCurrentGameState().getMoves();
+    //testGrid = new Grid.fromJSON(("[2, 0, 0, 4],[0, 0, 0, 0],[0, 0, 0, 4],[0, 0, 8, 8]"));
+    //testGrid.getMatrix().printMatrix();
+    List<int> punto = this.puntoMasGrande(testGrid);
+    List<int> auxpunto = new List<int>();
+    
+    auxpunto.add(0);
+    auxpunto.add(0);
+    //no importa mucho esta parte, solo corro donde comienzan los caminos a las esquinas
+    //muy probablemente lo cambie
+    auxpunto[0] = ((punto[0]+0.25)/2.0).truncate()*3;
+    auxpunto[1] = ((punto[1]+0.25)/2.0).truncate()*3; 
+    
+    if(moves >= 0)
+    {
+      punto[0] = auxpunto[0];
+      punto[1] = auxpunto[1];
+    }
+    this.getMove(testGrid, punto, false, Move.none);
+    if(1 == 200)
+    {
+      print(this.globalMove.getValue());
+      print(punto.toString());
+      return;
+    }
+    Game.move(this.globalMove);
+  }
+  
+  int getMove(Grid testGrid, List<int> punto, bool limit, Move prevMove)
+  {
     List<int> decrecimientos = new List<int>(); //array that will contain the different amount of decrecimientos from up/down/left/right
     List<Move> moveList = new List<Move>();
     int count = 0;
-    List<int> punto = this.puntoMasGrande(testGrid);
-    
-    //no importa mucho esta parte, solo corro donde comienzan los caminos a las esquinas
-    //muy probablemente lo cambie
-    punto[0] = ((punto[0]+0.25)/2.0).truncate()*3;
-    punto[1] = ((punto[1]+0.25)/2.0).truncate()*3;
+    List<int> aux = new List<int>();
+    Grid moveGrid = testGrid.clone();
+    int temp;
     
     //arriba
     moveGrid.simulateMoveUp();
-    if(moveGrid.compareGrid(testGrid) != 0)
+    if(prevMove != Move.down && moveGrid.compareGrid(testGrid) != 0)
     {
-      decrecimientos.add(this.maxDecrecimientosList(moveGrid,punto[0],punto[1])[1]);
+      if(limit == false)
+      {
+        temp = this.getMove(moveGrid, punto, true, Move.up);
+        if(temp != -1)
+        {
+          decrecimientos.add(temp);
+          moveList.add(Move.up);
+          count++;
+        }
+      }
+      aux = this.maxDecrecimientosList(moveGrid,punto[0],punto[1]);
+      decrecimientos.add(aux[1]);
       moveList.add(Move.up);
       count++;
     }
     moveGrid = testGrid.clone();
     //abajo
     moveGrid.simulateMoveDown();
-    if(moveGrid.compareGrid(testGrid) != 0)
+    if(prevMove != Move.up && moveGrid.compareGrid(testGrid) != 0)
     {
-      decrecimientos.add(this.maxDecrecimientosList(moveGrid,punto[0],punto[1])[1]);
+      if(limit == false)
+      {
+        temp = this.getMove(moveGrid, punto, true, Move.down);
+        if(temp != -1)
+        {
+          decrecimientos.add(temp);
+          moveList.add(Move.down);
+          count++;
+        }
+      }
+      aux = this.maxDecrecimientosList(moveGrid,punto[0],punto[1]);
+      decrecimientos.add(aux[1]);
       moveList.add(Move.down);
       count++;
     }
     moveGrid = testGrid.clone();
     //derecha
     moveGrid.simulateMoveRight();
-    if(moveGrid.compareGrid(testGrid) != 0)
+    if(prevMove != Move.left && moveGrid.compareGrid(testGrid) != 0)
     {
-      decrecimientos.add(this.maxDecrecimientosList(moveGrid,punto[0],punto[1])[1]);
+      if(limit == false)
+      {
+        temp = this.getMove(moveGrid, punto, true, Move.right);
+        if(temp != -1)
+        {
+          decrecimientos.add(temp);
+          moveList.add(Move.right);
+          count++;
+        }
+      }
+      aux = this.maxDecrecimientosList(moveGrid,punto[0],punto[1]);
+      decrecimientos.add(aux[1]);
       moveList.add(Move.right);
       count++;
     }
     moveGrid = testGrid.clone();
     //izquierda
     moveGrid.simulateMoveLeft();
-    if(moveGrid.compareGrid(testGrid) != 0)
+    if(prevMove != Move.right && moveGrid.compareGrid(testGrid) != 0)
     {
-      decrecimientos.add(this.maxDecrecimientosList(moveGrid,punto[0],punto[1])[1]);
+      if(limit == false)
+      {
+        temp = this.getMove(moveGrid, punto, true, Move.left);
+        if(temp != -1)
+        {
+          decrecimientos.add(temp);
+          moveList.add(Move.left);
+          count++;
+        }
+      }
+      aux = this.maxDecrecimientosList(moveGrid,punto[0],punto[1]);
+      decrecimientos.add(aux[1]);
       moveList.add(Move.left);
       count++;
     }
     //me quedo con el que maximice la cantidad de decrecimientos
     if(count>0)
     {
-      int max = decrecimientos[0];
-      Move movimiento = moveList[0];
+      int max = 0;
       for(int i=1; i<count; i++)
       {
-        if(decrecimientos[i] > max)
+        if(decrecimientos[i] > decrecimientos[max])
         {
-          movimiento = moveList[i];
-          max = decrecimientos[i];
+          max = i;
         }
       }
-      Game.move(movimiento);
-    } else
-    {
-      print("perdio");
+      this.globalMove = moveList[max];
+      return decrecimientos[max];
     }
+    return -1;
   }
   
   //useless method, just kept here because reasons
@@ -158,7 +227,7 @@ class SolverDecrecimiento extends GameSolver {
     List<int> addedcount = new List<int>();
     int max = 300000; //es medio bestia pero reemplazo el valor actual (x,y) para que cuando entremos en la recursion no vuelva por el camino que vino
     int aux = grid.getElement(x, y);
-    int elements = 0;
+    int elements = 0; 
     List<int> returnList = new List<int>();
     List<int> auxList;
     
@@ -176,6 +245,10 @@ class SolverDecrecimiento extends GameSolver {
       count.add(auxList[0]+1);
       addedcount.add(auxList[1]+aux);
       grid.setElement(x, y, aux);
+      if(grid.getElement(x, y) == grid.getElement(x+1, y))
+      {
+        addedcount[elements]--;
+      }
       elements++;
     }
     if(this.outOfBounds(x-1,y) == false && grid.getElement(x, y) >= grid.getElement(x-1, y)) //izquierda
@@ -185,6 +258,10 @@ class SolverDecrecimiento extends GameSolver {
       count.add(auxList[0]+1);
       addedcount.add(auxList[1]+aux);
       grid.setElement(x, y, aux);
+      if(grid.getElement(x, y) == grid.getElement(x-1, y))
+      {
+        addedcount[elements]--;
+      }
       elements++;
     }
     if(this.outOfBounds(x,y+1) == false && grid.getElement(x, y) >= grid.getElement(x, y+1)) //arriba
@@ -194,6 +271,10 @@ class SolverDecrecimiento extends GameSolver {
       count.add(auxList[0]+1);
       addedcount.add(auxList[1]+aux);
       grid.setElement(x, y, aux);
+      if(grid.getElement(x, y) == grid.getElement(x, y+1))
+      {
+        addedcount[elements]--;
+      }
       elements++;
     }
     if(this.outOfBounds(x,y-1) == false && grid.getElement(x, y) >= grid.getElement(x, y-1)) //abajo
@@ -203,6 +284,10 @@ class SolverDecrecimiento extends GameSolver {
       count.add(auxList[0]+1);
       addedcount.add(auxList[1]+aux);
       grid.setElement(x, y, aux);
+      if(grid.getElement(x, y) == grid.getElement(x, y-1))
+      {
+        addedcount[elements]--;
+      }
       elements++;
     }
     
@@ -252,6 +337,7 @@ class SolverDecrecimiento extends GameSolver {
   
   List<int> puntoMasGrande(Grid grid)
   {
+    int aux1,aux2;
     List<int> punto = new List<int>();
     punto.add(0);
     punto.add(0);
@@ -266,6 +352,16 @@ class SolverDecrecimiento extends GameSolver {
           punto[0] = i;
           punto[1] = j;
           valor = grid.getElement(i, j);
+        } else if(grid.getElement(i, j) == valor)
+        {
+          aux1 = ((i+0.25)/2.0).truncate()*3;
+          aux2 = ((j+0.25)/2.0).truncate()*3; 
+          if(i==aux1 && j==aux2)
+          {
+            punto[0] = i;
+            punto[1] = j;
+            valor = grid.getElement(i, j);
+          }
         }
       }
     }
