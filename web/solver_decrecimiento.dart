@@ -27,7 +27,7 @@ class SolverDecrecimiento extends GameSolver {
   {
     Grid testGrid = Game.getCurrentGameState().getGrid().clone(); //this is the current grid getting it from currentGameState
     int moves = Game.getCurrentGameState().getMoves();
-    //testGrid = new Grid.fromJSON(("[2, 4, 8, 16],[2, 8, 0, 0],[2, 0, 2, 0],[0, 0, 0, 0]"));
+    //testGrid = new Grid.fromJSON(("[0, 0, 4, 64],[0, 4, 16, 128],[0, 8, 8, 256],[4, 4, 2, 1024]"));
     //testGrid.getMatrix().printMatrix();
     List<int> punto = this.puntoMasGrande(testGrid);
     List<int> auxpunto = new List<int>();
@@ -71,7 +71,7 @@ class SolverDecrecimiento extends GameSolver {
       List<Move> prevMoves = new List<Move>();
       this.getMove(testGrid, punto, depth, prevMoves, 0);
     }
-    if(1 == 300)
+    if(moves == 400)
     {
       print(this.globalMove.getValue());
       print(punto.toString());
@@ -80,32 +80,36 @@ class SolverDecrecimiento extends GameSolver {
     Game.move(this.globalMove);
   }
   
-  int getMove(Grid testGrid, List<int> punto, int depth, List<Move> pMoves, int amountMoves)
+  List<int> getMove(Grid testGrid, List<int> punto, int depth, List<Move> pMoves, int amountMoves)
   {
     List<int> decrecimientos = new List<int>(); //array that will contain the different amount of decrecimientos from up/down/left/right
     List<Move> prevMoves = this.cloneList(pMoves,amountMoves);
     List<Move> moveList = new List<Move>();
+    List<int> depthList = new List<int>();
     int count = 0;
     List<int> aux = new List<int>();
     Grid moveGrid = testGrid.clone();
-    int temp;
+    List<int> temp;
+    List<int> returnList = new List<int>();
     
     //arriba
     moveGrid.simulateMoveUp();
     if(isInList(prevMoves, amountMoves, Move.down) == false && moveGrid.compareGrid(testGrid) != 0)
     {
-      aux = this.maxDecrecimientosList(moveGrid,punto[0],punto[1],true);
+      aux = this.maxDecrecimientosList(moveGrid,punto[0],punto[1],true,0,0);
       decrecimientos.add(aux[1]);
       moveList.add(Move.up);
+      depthList.add(depth);
       count++;
       if(depth != 0 && aux[1] != 0)
       {
         prevMoves.add(Move.up);
         temp = this.getMove(moveGrid, punto, depth-1, prevMoves, amountMoves+1);
-        if(temp != -1)
+        if(temp[0] != -1)
         {
-          decrecimientos.add(temp);
+          decrecimientos.add(temp[0]);
           moveList.add(Move.up);
+          depthList.add(temp[1]);
           count++;
         }
       }
@@ -116,18 +120,20 @@ class SolverDecrecimiento extends GameSolver {
     moveGrid.simulateMoveDown();
     if(isInList(prevMoves, amountMoves, Move.up) == false && moveGrid.compareGrid(testGrid) != 0)
     {
-      aux = this.maxDecrecimientosList(moveGrid,punto[0],punto[1],true);
+      aux = this.maxDecrecimientosList(moveGrid,punto[0],punto[1],true,0,0);
       decrecimientos.add(aux[1]);
       moveList.add(Move.down);
+      depthList.add(depth);
       count++;
       if(depth != 0 && aux[1] != 0)
       {
         prevMoves.add(Move.down);
         temp = this.getMove(moveGrid, punto, depth-1, prevMoves, amountMoves+1);
-        if(temp != -1)
+        if(temp[0] != -1)
         {
-          decrecimientos.add(temp);
+          decrecimientos.add(temp[0]);
           moveList.add(Move.down);
+          depthList.add(temp[1]);
           count++;
         }
       }
@@ -138,18 +144,20 @@ class SolverDecrecimiento extends GameSolver {
     moveGrid.simulateMoveRight();
     if(isInList(prevMoves, amountMoves, Move.left) == false && moveGrid.compareGrid(testGrid) != 0)
     {
-      aux = this.maxDecrecimientosList(moveGrid,punto[0],punto[1],true);
+      aux = this.maxDecrecimientosList(moveGrid,punto[0],punto[1],true,0,0);
       decrecimientos.add(aux[1]);
       moveList.add(Move.right);
+      depthList.add(depth);
       count++;
       if(depth != 0 && aux[1] != 0)
       {
         prevMoves.add(Move.right);
         temp = this.getMove(moveGrid, punto, depth-1, prevMoves, amountMoves+1);
-        if(temp != -1)
+        if(temp[0] != -1)
         {
-          decrecimientos.add(temp);
+          decrecimientos.add(temp[0]);
           moveList.add(Move.right);
+          depthList.add(temp[1]);
           count++;
         }
       }
@@ -160,18 +168,20 @@ class SolverDecrecimiento extends GameSolver {
     moveGrid.simulateMoveLeft();
     if(isInList(prevMoves, amountMoves, Move.right) == false && moveGrid.compareGrid(testGrid) != 0)
     {
-      aux = this.maxDecrecimientosList(moveGrid,punto[0],punto[1],true);
+      aux = this.maxDecrecimientosList(moveGrid,punto[0],punto[1],true,0,0);
       decrecimientos.add(aux[1]);
       moveList.add(Move.left);
+      depthList.add(depth);
       count++;
       if(depth != 0 && aux[1] != 0)
       {
         prevMoves.add(Move.left);
         temp = this.getMove(moveGrid, punto, depth-1, prevMoves, amountMoves+1);
-        if(temp != -1)
+        if(temp[0] != -1)
         {
-          decrecimientos.add(temp);
+          decrecimientos.add(temp[0]);
           moveList.add(Move.left);
+          depthList.add(temp[1]);
           count++;
         }
       }
@@ -185,12 +195,22 @@ class SolverDecrecimiento extends GameSolver {
         if(decrecimientos[i] > decrecimientos[max])
         {
           max = i;
+        } else if(decrecimientos[i] == decrecimientos[max])
+        {
+          if(depthList[i] > depthList[max])
+          {
+            max = i;
+          }
         }
       }
       this.globalMove = moveList[max];
-      return decrecimientos[max];
+      returnList.add(decrecimientos[max]);
+      returnList.add(depthList[max]);
+      return returnList;
     }
-    return -1;
+    returnList.add(-1);
+    returnList.add(depth);
+    return returnList;
   }
   
   void volverEsquina(Grid grid, bool esquinado)
@@ -245,7 +265,7 @@ class SolverDecrecimiento extends GameSolver {
    * la mayor suma de elementos. Por ejemplo si tenemos dos caminos que empiezan de un punto de valor 16 y son 16-16-2 y 16-8-4-2 nos
    * quedamos con el de 16-16-2.
    */
-  List<int> maxDecrecimientosList(Grid grid, int x, int y, bool first)
+  List<int> maxDecrecimientosList(Grid grid, int x, int y, bool first, int direcX, int direcY)
   {
     List<int> count = new List<int>();
     List<int> addedcount = new List<int>();
@@ -262,13 +282,13 @@ class SolverDecrecimiento extends GameSolver {
       return returnList;
     }
     
-    if(this.outOfBounds(x+1,y) == false && grid.getElement(x, y) >= grid.getElement(x+1, y)) //derecha
+    if(this.outOfBounds(x+1,y) == false && grid.getElement(x, y) >= grid.getElement(x+1, y)) //abajo
     {
       this.factor(1, 0, first);
       grid.setElement(x, y, max);
-      auxList = this.maxDecrecimientosList(grid,x+1,y,false);
+      auxList = this.maxDecrecimientosList(grid,x+1,y,false,1,0);
       count.add(auxList[0]+1);
-      addedcount.add(auxList[1]+aux*this.factor(1,0,first));
+      addedcount.add(auxList[1]+aux*this.factor(direcX, direcY, false));
       grid.setElement(x, y, aux);
       if(grid.getElement(x, y) == grid.getElement(x+1, y))
       {
@@ -276,13 +296,13 @@ class SolverDecrecimiento extends GameSolver {
       }
       elements++;
     }
-    if(this.outOfBounds(x-1,y) == false && grid.getElement(x, y) >= grid.getElement(x-1, y)) //izquierda
+    if(this.outOfBounds(x-1,y) == false && grid.getElement(x, y) >= grid.getElement(x-1, y)) //arriba
     {
       this.factor(1, 0, first);
       grid.setElement(x, y, max);
-      auxList = this.maxDecrecimientosList(grid,x-1,y,false);
+      auxList = this.maxDecrecimientosList(grid,x-1,y,false,1,0);
       count.add(auxList[0]+1);
-      addedcount.add(auxList[1]+aux*this.factor(1,0,first));
+      addedcount.add(auxList[1]+aux*this.factor(direcX, direcY, false));
       grid.setElement(x, y, aux);
       if(grid.getElement(x, y) == grid.getElement(x-1, y))
       {
@@ -290,13 +310,13 @@ class SolverDecrecimiento extends GameSolver {
       }
       elements++;
     }
-    if(this.outOfBounds(x,y+1) == false && grid.getElement(x, y) >= grid.getElement(x, y+1)) //arriba
+    if(this.outOfBounds(x,y+1) == false && grid.getElement(x, y) >= grid.getElement(x, y+1)) //derecha
     {
       this.factor(0, 1, first);
       grid.setElement(x, y, max);
-      auxList = this.maxDecrecimientosList(grid,x,y+1,false);
+      auxList = this.maxDecrecimientosList(grid,x,y+1,false,0,1);
       count.add(auxList[0]+1);
-      addedcount.add(auxList[1]+aux*this.factor(0,1,first));
+      addedcount.add(auxList[1]+aux*this.factor(direcX, direcY, false));
       grid.setElement(x, y, aux);
       if(grid.getElement(x, y) == grid.getElement(x, y+1))
       {
@@ -304,13 +324,13 @@ class SolverDecrecimiento extends GameSolver {
       }
       elements++;
     }
-    if(this.outOfBounds(x,y-1) == false && grid.getElement(x, y) >= grid.getElement(x, y-1)) //abajo
+    if(this.outOfBounds(x,y-1) == false && grid.getElement(x, y) >= grid.getElement(x, y-1)) //izquierda
     {
       this.factor(0, 1, first);
       grid.setElement(x, y, max);
-      auxList = this.maxDecrecimientosList(grid,x,y-1,false);
+      auxList = this.maxDecrecimientosList(grid,x,y-1,false,0,1);
       count.add(auxList[0]+1);
-      addedcount.add(auxList[1]+aux*this.factor(0,1,first));
+      addedcount.add(auxList[1]+aux*this.factor(direcX, direcY, false));
       grid.setElement(x, y, aux);
       if(grid.getElement(x, y) == grid.getElement(x, y-1))
       {
@@ -333,7 +353,8 @@ class SolverDecrecimiento extends GameSolver {
       returnList.add(addedcount[maxcount]);
       return returnList;
     }
-    returnList.add(-1);
+    returnList.add(0);
+    //returnList.add(aux*this.factor(direcX, direcY, false));
     returnList.add(0);
     return returnList;
   }
