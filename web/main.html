@@ -10,15 +10,22 @@
     <script async src="packages/browser/dart.js"></script>
     
     <link rel="stylesheet" href="main.css">
+    
+    <!-- Bootstrap -->
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    
   </head>
   <body>
-    <h1>RedHat2048</h1>
-    
-    <p>2048 game</p>
-    
-    <table id="table_id">
-      <tr>
-        <td>
+  
+  
+    <div class="container">
+      <h1>RedHat2048</h1>
+      
+      <p class="lead">2048 solver</p>
+      
+      <div class="row">
+        <div class="col-xs-12 col-md-5">
+        
           <table id="grid_id">
             <tr>
               <td id="gridcell_id">
@@ -77,19 +84,59 @@
               </td>
             </tr>
           </table>
-        </td>
-        <td>
-        <div id="score_id">Score: 0</div>
-        <div id="points_id">Points: 0</div>
-        <div id="moves_id">Moves: 0</div>
-      </tr>
-      <tr>
-        <td align="center">
-          <div id="game_over_id"><img src="images/game_over.jpg"></div>
-          <div id="you_win_id"><img src="images/you_win.jpg"></div>
-        </td>
-      </tr>
-    </table>
+          
+        </div>
+        <div class="col-xs-12 col-md-3">
+            
+          <p>
+            <div class="panel panel-primary">
+              <div class="panel-heading">
+                <h3 class="panel-title"> Game state </h3>
+              </div>
+              <div class="panel-body">
+                <div id="score_id">Score: 0</div>
+                <div id="points_id">Points: 0</div>
+                <div id="moves_id">Moves: 0</div>
+              </div>
+            </div>
+        
+            <button type="button" class="btn btn-primary btn-block">New game</button>
+          
+            <div class="checkbox">
+              <label>
+                <input type="checkbox"> Use client logic
+              </label>
+            </div>
+          </p>
+          
+        </div>       
+      </div>
+      
+      <p>
+        <div class="row">
+          <div class="col-xs-12 col-md-8">
+              
+            <div id="game_over_id">    
+              <div class="alert alert-danger" role="alert">
+                You lose!
+              </div>
+            </div>
+            
+            <div id="you_win_id">        
+              <div class="alert alert-success" role="alert">
+                You win 2048!
+              </div>
+            </div>
+      
+          </div>
+        </div>
+      </p>
+    </div>
+    
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
 
   </body>
 </html>
