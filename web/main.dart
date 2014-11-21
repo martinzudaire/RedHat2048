@@ -6,6 +6,7 @@ import 'points_view.dart';
 import 'moves_view.dart';
 import 'game_over_view.dart';
 import 'game_solver.dart';
+import 'button_new_game.dart';
 
 //Add solvers here
 import 'solver_player.dart';
@@ -36,6 +37,8 @@ void main() {
   Game.addObserver(movesView);
   Game.addObserver(gameOverView);
   Game.addObserver(solver);
+  
+  ButtonNewGame buttonNewGame = new ButtonNewGame();
 
   Game.newGame();   
   
