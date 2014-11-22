@@ -89,10 +89,10 @@ class SolverGradient extends GameSolver {
           count++;
           if(j<3)
           {
-            gradient += (logaritmo(grid.getElement(i, j)) - logaritmo(grid.getElement(i,j+1)))/count;
+            gradient += (logaritmo(grid.getValue(i, j)) - logaritmo(grid.getValue(i,j+1)))/count;
           } else
           {
-            gradient += (logaritmo(grid.getElement(i, j)) - logaritmo(grid.getElement(i+1,j)))/count;
+            gradient += (logaritmo(grid.getValue(i, j)) - logaritmo(grid.getValue(i+1,j)))/count;
           }
         }
       } else
@@ -102,10 +102,10 @@ class SolverGradient extends GameSolver {
           count++;
           if(j>0)
           {
-            gradient += (logaritmo(grid.getElement(i, j)) - logaritmo(grid.getElement(i,j-1)))/count;
+            gradient += (logaritmo(grid.getValue(i, j)) - logaritmo(grid.getValue(i,j-1)))/count;
           } else
           {
-            gradient += (logaritmo(grid.getElement(i, j)) - logaritmo(grid.getElement(i+1,j)))/count;
+            gradient += (logaritmo(grid.getValue(i, j)) - logaritmo(grid.getValue(i+1,j)))/count;
           }
         }
       }
@@ -125,13 +125,13 @@ class SolverGradient extends GameSolver {
         for(int j=0; j<3; j++)
         {
           count++;
-          if(grid.getElement(i, j) == 0)
+          if(grid.getValue(i, j) == 0)
           {
             return gradient;
           }
           if(j<3)
           {
-            if(grid.getElement(i, j) >= grid.getElement(i, j+1))
+            if(grid.getValue(i, j) >= grid.getValue(i, j+1))
             {
               gradient = gradient + 1.0;
             } else
@@ -140,7 +140,7 @@ class SolverGradient extends GameSolver {
             }
           } else
           {
-            if(grid.getElement(i, j) >= grid.getElement(i+1, j))
+            if(grid.getValue(i, j) >= grid.getValue(i+1, j))
             {
               gradient = gradient + 1.0;
             } else
@@ -153,14 +153,14 @@ class SolverGradient extends GameSolver {
       {
         for(int j=0; j<3; j++)
         {
-          if(grid.getElement(i, j) == 0)
+          if(grid.getValue(i, j) == 0)
           {
             return gradient;
           }
           count++;
           if(j<3)
           {
-            if(grid.getElement(i, j) >= grid.getElement(i, j-1))
+            if(grid.getValue(i, j) >= grid.getValue(i, j-1))
             {
               gradient = gradient + 1.0;
             } else
@@ -169,7 +169,7 @@ class SolverGradient extends GameSolver {
             }
           } else
           {
-            if(grid.getElement(i, j) >= grid.getElement(i+1, j))
+            if(grid.getValue(i, j) >= grid.getValue(i+1, j))
             {
               gradient = gradient + 1.0;
             } else

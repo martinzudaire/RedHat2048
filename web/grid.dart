@@ -1,6 +1,7 @@
 library grid;
 
 import 'matrix.dart';
+import 'grid_coordinates.dart';
 
 ///
 /// GRID
@@ -28,29 +29,34 @@ class Grid {
   
   //Get & Set methods
   
-  int getElement(int x, int y) {
-    if (x>=0 && x<4 && y>=0 && y<4) {
+  int getValue(int x, int y) {
+    if (!isOutOfBounds(x,y)) {
       return _grid.getElement(x, y);
     } else {
-      return 0;
+      return -1;
     }
   }
   
-  void setElement(int x, int y, int value) {
-    if (x>=0 && x<4 && y>=0 && y<4) {
+  void setValue(int x, int y, int value) {
+    if (!isOutOfBounds(x,y)) {
       _grid.setElement(value, x, y);
     }
+  }
+  
+  bool isOutOfBounds(int x, int y) {
+    return !(x>=0 && x<4 && y>=0 && y<4);
   }
   
   Grid clone() {
     return new Grid.fromMatrix(this._grid);
   }
   
-  Matrix getMatrix()
-  {
+  Matrix getMatrix() {
     return this._grid;
   }
   
+  
+  //TODO check below
   void simulateMoveLeft()
   {
     for(int i=0; i<4; i++)
@@ -58,18 +64,18 @@ class Grid {
       //ponemos todos los numeros juntos
       for(int j=0; j<3; j++)
       {
-        if(this.getElement(i,j) == 0)
+        if(this.getValue(i,j) == 0)
         {
           bool notZero = false;
           for(int k=j+1; k<4; k++)
           {
-            if(this.getElement(i, k) != 0)
+            if(this.getValue(i, k) != 0)
             {
               notZero = true;
             }
-            this.setElement(i, k-1, this.getElement(i, k));
+            this.setValue(i, k-1, this.getValue(i, k));
           }
-          this.setElement(i, 3, 0);
+          this.setValue(i, 3, 0);
           if(notZero == true)
           {
             j--;
@@ -80,19 +86,19 @@ class Grid {
       for(int j=0; j<3; j++)
       {
         //si ya llegamos al sector de ceros salir
-        if(this.getElement(i, j) == 0)
+        if(this.getValue(i, j) == 0)
         {
           j = 4;
         } else
         {
-          if(this.getElement(i, j+1) == this.getElement(i, j))
+          if(this.getValue(i, j+1) == this.getValue(i, j))
           {
-            this.setElement(i, j, this.getElement(i, j)*2);
+            this.setValue(i, j, this.getValue(i, j)*2);
             for(int k=j+2; k<4; k++)
             {
-              this.setElement(i, k-1, this.getElement(i, k));
+              this.setValue(i, k-1, this.getValue(i, k));
             }
-            this.setElement(i, 3, 0);
+            this.setValue(i, 3, 0);
           }
         }
       }
@@ -106,18 +112,18 @@ class Grid {
       //ponemos todos los numeros juntos
       for(int j=3; j>0; j--)
       {
-        if(this.getElement(i,j) == 0)
+        if(this.getValue(i,j) == 0)
         {
           bool notZero = false;
           for(int k=j-1; k>=0; k--)
           {
-            if(this.getElement(i, k) != 0)
+            if(this.getValue(i, k) != 0)
             {
               notZero = true;
             }
-            this.setElement(i, k+1, this.getElement(i, k));
+            this.setValue(i, k+1, this.getValue(i, k));
           }
-          this.setElement(i, 0, 0);
+          this.setValue(i, 0, 0);
           if(notZero == true)
           {
             j++;
@@ -128,19 +134,19 @@ class Grid {
       for(int j=3; j>0; j--)
       {
         //si ya llegamos al sector de ceros salir
-        if(this.getElement(i, j) == 0)
+        if(this.getValue(i, j) == 0)
         {
           j = 0;
         } else
         {
-          if(this.getElement(i, j-1) == this.getElement(i, j))
+          if(this.getValue(i, j-1) == this.getValue(i, j))
           {
-            this.setElement(i, j, this.getElement(i, j)*2);
+            this.setValue(i, j, this.getValue(i, j)*2);
             for(int k=j-2; k>=0; k--)
             {
-              this.setElement(i, k+1, this.getElement(i, k));
+              this.setValue(i, k+1, this.getValue(i, k));
             }
-            this.setElement(i, 0, 0);
+            this.setValue(i, 0, 0);
           }
         }
       }
@@ -154,18 +160,18 @@ class Grid {
       //ponemos todos los numeros juntos
       for(int i=0; i<3; i++)
       {
-        if(this.getElement(i,j) == 0)
+        if(this.getValue(i,j) == 0)
         {
           bool notZero = false;
           for(int k=i+1; k<4; k++)
           {
-            if(this.getElement(k, j) != 0)
+            if(this.getValue(k, j) != 0)
             {
               notZero = true;
             }
-            this.setElement(k-1, j, this.getElement(k, j));
+            this.setValue(k-1, j, this.getValue(k, j));
           }
-          this.setElement(3, j, 0);
+          this.setValue(3, j, 0);
           if(notZero == true)
           {
             i--;
@@ -176,19 +182,19 @@ class Grid {
       for(int i=0; i<3; i++)
       {
         //si ya llegamos al sector de ceros salir
-        if(this.getElement(i, j) == 0)
+        if(this.getValue(i, j) == 0)
         {
           i = 4;
         } else
         {
-          if(this.getElement(i+1, j) == this.getElement(i, j))
+          if(this.getValue(i+1, j) == this.getValue(i, j))
           {
-            this.setElement(i, j, this.getElement(i, j)*2);
+            this.setValue(i, j, this.getValue(i, j)*2);
             for(int k=i+2; k<4; k++)
             {
-              this.setElement(k-1, j, this.getElement(k, j));
+              this.setValue(k-1, j, this.getValue(k, j));
             }
-            this.setElement(3, j, 0);
+            this.setValue(3, j, 0);
           }
         }
       }
@@ -202,18 +208,18 @@ class Grid {
       //ponemos todos los numeros juntos
       for(int i=3; i>0; i--)
       {
-        if(this.getElement(i,j) == 0)
+        if(this.getValue(i,j) == 0)
         {
           bool notZero = false;
           for(int k=i-1; k>=0; k--)
           {
-            if(this.getElement(k, j) != 0)
+            if(this.getValue(k, j) != 0)
             {
               notZero = true;
             }
-            this.setElement(k+1, j, this.getElement(k, j));
+            this.setValue(k+1, j, this.getValue(k, j));
           }
-          this.setElement(0, j, 0);
+          this.setValue(0, j, 0);
           if(notZero == true)
           {
             i++;
@@ -224,19 +230,19 @@ class Grid {
       for(int i=3; i>0; i--)
       {
         //si ya llegamos al sector de ceros salir
-        if(this.getElement(i, j) == 0)
+        if(this.getValue(i, j) == 0)
         {
           i = 0;
         } else
         {
-          if(this.getElement(i-1, j) == this.getElement(i, j))
+          if(this.getValue(i-1, j) == this.getValue(i, j))
           {
-            this.setElement(i, j, this.getElement(i, j)*2);
+            this.setValue(i, j, this.getValue(i, j)*2);
             for(int k=i-2; k>=0; k--)
             {
-              this.setElement(k+1, j, this.getElement(k, j));
+              this.setValue(k+1, j, this.getValue(k, j));
             }
-            this.setElement(0, j, 0);
+            this.setValue(0, j, 0);
           }
         }
       }
@@ -250,7 +256,7 @@ class Grid {
     {
       for(int j=0; j<4; j++)
       {
-        if(gridToCompare.getElement(i, j) != this.getElement(i, j))
+        if(gridToCompare.getValue(i, j) != this.getValue(i, j))
         {
           return 1;
         }

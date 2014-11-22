@@ -90,6 +90,7 @@ class GameLogic implements WebRequest {
   
   
   //_processGameState()
+  //Performs a move and adds a random number.
   GameState _processGameState(GameState gameState, Move move) {    
     GameState gs = _processGameStateHelper(gameState.clone(), move); 
     _addRandomNumberToGrid(gs.getGrid());
@@ -100,6 +101,7 @@ class GameLogic implements WebRequest {
   
   
   //_simulateMove()
+  //Does not add random number. Only performs a move.
   GameState _simulateMove(GameState gameState, Move move) {    
     GameState gs = _processGameStateHelper(gameState.clone(), move); 
     
