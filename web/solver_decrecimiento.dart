@@ -19,14 +19,13 @@ class SolverDecrecimiento extends GameSolver {
   
   SolverDecrecimiento() 
   {
+    
   }
   
   void move() 
   {
     Grid testGrid = Game.getCurrentGameState().getGrid().clone(); //this is the current grid getting it from currentGameState
     int moves = Game.getCurrentGameState().getMoves();
-    //testGrid = new Grid.fromJSON(("[32, 64, 256, 512],[8, 8, 2, 2],[2, 0, 0, 0],[2, 0, 0, 0]"));
-    //testGrid.getMatrix().printMatrix();
     List<int> punto = this.puntoMasGrande(testGrid);
     List<int> auxpunto = new List<int>();
     bool esquinado = false;
@@ -68,12 +67,6 @@ class SolverDecrecimiento extends GameSolver {
     {
       List<Move> prevMoves = new List<Move>();
       this.getMove(testGrid, punto, depth, prevMoves, 0);
-    }
-    if(1 == 400)
-    {
-      print(this.globalMove.getValue());
-      print(punto.toString());
-      return;
     }
     
     Game.move(this.globalMove);
@@ -299,10 +292,10 @@ class SolverDecrecimiento extends GameSolver {
     }
     if(this.outOfBounds(x-1,y) == false && grid.getElement(x, y) >= grid.getElement(x-1, y)) //arriba
     {
-      this.factor(-1, 0, x, y, first, breakZigZag);
+      this.factor(1, 0, x, y, first, breakZigZag);
       auxZigZag = (this.factor(1, 0, x, y, false, breakZigZag) == 1);
       grid.setElement(x, y, max);
-      auxList = this.maxDecrecimientosList(grid,x-1,y,false,-1,0,auxZigZag);
+      auxList = this.maxDecrecimientosList(grid,x-1,y,false,1,0,auxZigZag);
       count.add(auxList[0]+1);
       addedcount.add(auxList[1]+aux*this.factor(1, 0, x, y, false, breakZigZag));
       grid.setElement(x, y, aux);
@@ -329,10 +322,10 @@ class SolverDecrecimiento extends GameSolver {
     }
     if(this.outOfBounds(x,y-1) == false && grid.getElement(x, y) >= grid.getElement(x, y-1)) //izquierda
     {
-      this.factor(0, -1, x, y, first, breakZigZag);
+      this.factor(0, 1, x, y, first, breakZigZag);
       auxZigZag = (this.factor(0, 1, x, y, false, breakZigZag) == 1);
       grid.setElement(x, y, max);
-      auxList = this.maxDecrecimientosList(grid,x,y-1,false,0,-1,auxZigZag);
+      auxList = this.maxDecrecimientosList(grid,x,y-1,false,0,1,auxZigZag);
       count.add(auxList[0]+1);
       addedcount.add(auxList[1]+aux*this.factor(0, 1, x, y, false, breakZigZag));
       grid.setElement(x, y, aux);
@@ -358,7 +351,6 @@ class SolverDecrecimiento extends GameSolver {
       return returnList;
     }
     returnList.add(0);
-    //returnList.add(aux*this.factor(direcX, direcY, x, y, false, breakZigZag)); //definitely useless, makes the solution worse
     returnList.add(0);
     return returnList;
   }
@@ -464,8 +456,8 @@ class SolverDecrecimiento extends GameSolver {
     }
     if(first == true)
     {
-      this.globalDirectionX = abs(currentx);
-      this.globalDirectionY = abs(currenty);
+      this.globalDirectionX = currentx;
+      this.globalDirectionY = currenty;
       return 2;
     } else
     {
@@ -473,20 +465,11 @@ class SolverDecrecimiento extends GameSolver {
       {
         return 2;
       }
-      if(abs(currentx) == this.globalDirectionX && abs(currenty) == this.globalDirectionY)
+      if(currentx == this.globalDirectionX && currenty == this.globalDirectionY)
       {
         return 2;
       }
     }
     return 1;
-  }
-  
-  int abs(int x)
-  {
-    if(x<0)
-    {
-      return -x;
-    }
-    return x;
   }
 }
