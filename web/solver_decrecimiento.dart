@@ -294,13 +294,8 @@ class SolverDecrecimiento extends GameSolver {
     {
       this.factor(1, 0, x, y, first, breakZigZag);
       auxZigZag = (this.factor(1, 0, x, y, false, breakZigZag) == 1);
-<<<<<<< HEAD
-      grid.setElement(x, y, max);
-      auxList = this.maxDecrecimientosList(grid,x-1,y,false,1,0,auxZigZag);
-=======
       grid.setValue(x, y, max);
       auxList = this.maxDecrecimientosList(grid,x-1,y,false,-1,0,auxZigZag);
->>>>>>> 55f1f94dfb064330a5b7a5a9f4f5049bf7881d83
       count.add(auxList[0]+1);
       addedcount.add(auxList[1]+aux*this.factor(1, 0, x, y, false, breakZigZag));
       grid.setValue(x, y, aux);
@@ -329,13 +324,8 @@ class SolverDecrecimiento extends GameSolver {
     {
       this.factor(0, 1, x, y, first, breakZigZag);
       auxZigZag = (this.factor(0, 1, x, y, false, breakZigZag) == 1);
-<<<<<<< HEAD
-      grid.setElement(x, y, max);
-      auxList = this.maxDecrecimientosList(grid,x,y-1,false,0,1,auxZigZag);
-=======
       grid.setValue(x, y, max);
       auxList = this.maxDecrecimientosList(grid,x,y-1,false,0,-1,auxZigZag);
->>>>>>> 55f1f94dfb064330a5b7a5a9f4f5049bf7881d83
       count.add(auxList[0]+1);
       addedcount.add(auxList[1]+aux*this.factor(0, 1, x, y, false, breakZigZag));
       grid.setValue(x, y, aux);
