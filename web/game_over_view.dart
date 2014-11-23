@@ -20,8 +20,13 @@ class GameOverView implements Observer {
 
     if (gs.isWon()) {
       querySelector('#you_win_id').style.display = "block";
+      querySelector('#game_over_id').style.display = "none";
     } else if (gs.isOver()) {
+      querySelector('#you_win_id').style.display = "none";
       querySelector('#game_over_id').style.display = "block";
+    } else {
+      querySelector('#you_win_id').style.display = "none";
+      querySelector('#game_over_id').style.display = "none";      
     }
     
   }

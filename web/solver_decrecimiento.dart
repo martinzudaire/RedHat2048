@@ -262,7 +262,7 @@ class SolverDecrecimiento extends GameSolver {
     List<int> count = new List<int>();
     List<int> addedcount = new List<int>();
     int max = 300000; //es medio bestia pero reemplazo el valor actual (x,y) para que cuando entremos en la recursion no vuelva por el camino que vino
-    int aux = grid.getElement(x, y);
+    int aux = grid.getValue(x, y);
     int elements = 0; 
     List<int> returnList = new List<int>();
     List<int> auxList;
@@ -275,61 +275,71 @@ class SolverDecrecimiento extends GameSolver {
       return returnList;
     }
     
-    if(this.outOfBounds(x+1,y) == false && grid.getElement(x, y) >= grid.getElement(x+1, y)) //abajo
+    if(this.outOfBounds(x+1,y) == false && grid.getValue(x, y) >= grid.getValue(x+1, y)) //abajo
     {
       this.factor(1, 0, x, y, first, breakZigZag);
       auxZigZag = (this.factor(1, 0, x, y, false, breakZigZag) == 1);
-      grid.setElement(x, y, max);
+      grid.setValue(x, y, max);
       auxList = this.maxDecrecimientosList(grid,x+1,y,false,1,0,auxZigZag);
       count.add(auxList[0]+1);
       addedcount.add(auxList[1]+aux*this.factor(1, 0, x, y, false, breakZigZag));
-      grid.setElement(x, y, aux);
-      if(grid.getElement(x, y) == grid.getElement(x+1, y))
+      grid.setValue(x, y, aux);
+      if(grid.getValue(x, y) == grid.getValue(x+1, y))
       {
         addedcount[elements]--;
       }
       elements++;
     }
-    if(this.outOfBounds(x-1,y) == false && grid.getElement(x, y) >= grid.getElement(x-1, y)) //arriba
+    if(this.outOfBounds(x-1,y) == false && grid.getValue(x, y) >= grid.getValue(x-1, y)) //arriba
     {
       this.factor(1, 0, x, y, first, breakZigZag);
       auxZigZag = (this.factor(1, 0, x, y, false, breakZigZag) == 1);
+<<<<<<< HEAD
       grid.setElement(x, y, max);
       auxList = this.maxDecrecimientosList(grid,x-1,y,false,1,0,auxZigZag);
+=======
+      grid.setValue(x, y, max);
+      auxList = this.maxDecrecimientosList(grid,x-1,y,false,-1,0,auxZigZag);
+>>>>>>> 55f1f94dfb064330a5b7a5a9f4f5049bf7881d83
       count.add(auxList[0]+1);
       addedcount.add(auxList[1]+aux*this.factor(1, 0, x, y, false, breakZigZag));
-      grid.setElement(x, y, aux);
-      if(grid.getElement(x, y) == grid.getElement(x-1, y))
+      grid.setValue(x, y, aux);
+      if(grid.getValue(x, y) == grid.getValue(x-1, y))
       {
         addedcount[elements]--;
       }
       elements++;
     }
-    if(this.outOfBounds(x,y+1) == false && grid.getElement(x, y) >= grid.getElement(x, y+1)) //derecha
+    if(this.outOfBounds(x,y+1) == false && grid.getValue(x, y) >= grid.getValue(x, y+1)) //derecha
     {
       this.factor(0, 1, x, y, first, breakZigZag);
       auxZigZag = (this.factor(0, 1, x, y, false, breakZigZag) == 1);
-      grid.setElement(x, y, max);
+      grid.setValue(x, y, max);
       auxList = this.maxDecrecimientosList(grid,x,y+1,false,0,1,auxZigZag);
       count.add(auxList[0]+1);
       addedcount.add(auxList[1]+aux*this.factor(0, 1, x, y, false, breakZigZag));
-      grid.setElement(x, y, aux);
-      if(grid.getElement(x, y) == grid.getElement(x, y+1))
+      grid.setValue(x, y, aux);
+      if(grid.getValue(x, y) == grid.getValue(x, y+1))
       {
         addedcount[elements]--;
       }
       elements++;
     }
-    if(this.outOfBounds(x,y-1) == false && grid.getElement(x, y) >= grid.getElement(x, y-1)) //izquierda
+    if(this.outOfBounds(x,y-1) == false && grid.getValue(x, y) >= grid.getValue(x, y-1)) //izquierda
     {
       this.factor(0, 1, x, y, first, breakZigZag);
       auxZigZag = (this.factor(0, 1, x, y, false, breakZigZag) == 1);
+<<<<<<< HEAD
       grid.setElement(x, y, max);
       auxList = this.maxDecrecimientosList(grid,x,y-1,false,0,1,auxZigZag);
+=======
+      grid.setValue(x, y, max);
+      auxList = this.maxDecrecimientosList(grid,x,y-1,false,0,-1,auxZigZag);
+>>>>>>> 55f1f94dfb064330a5b7a5a9f4f5049bf7881d83
       count.add(auxList[0]+1);
       addedcount.add(auxList[1]+aux*this.factor(0, 1, x, y, false, breakZigZag));
-      grid.setElement(x, y, aux);
-      if(grid.getElement(x, y) == grid.getElement(x, y-1))
+      grid.setValue(x, y, aux);
+      if(grid.getValue(x, y) == grid.getValue(x, y-1))
       {
         addedcount[elements]--;
       }
@@ -392,12 +402,12 @@ class SolverDecrecimiento extends GameSolver {
     {
       for(int j=0; j<4; j++)
       {
-        if(grid.getElement(i, j) > valor)
+        if(grid.getValue(i, j) > valor)
         {
           punto[0] = i;
           punto[1] = j;
-          valor = grid.getElement(i, j);
-        } else if(grid.getElement(i, j) == valor)
+          valor = grid.getValue(i, j);
+        } else if(grid.getValue(i, j) == valor)
         {
           aux1 = ((i+0.25)/2.0).truncate()*3;
           aux2 = ((j+0.25)/2.0).truncate()*3; 
@@ -405,7 +415,7 @@ class SolverDecrecimiento extends GameSolver {
           {
             punto[0] = i;
             punto[1] = j;
-            valor = grid.getElement(i, j);
+            valor = grid.getValue(i, j);
           }
         }
       }

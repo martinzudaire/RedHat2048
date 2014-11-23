@@ -2,6 +2,7 @@ library GridIterator;
 
 import 'grid.dart';
 import 'move.dart';
+import 'grid_coordinates.dart';
 
 class GridIterator {
   
@@ -59,37 +60,29 @@ class GridIterator {
   bool isCellDone() => (_cell>3);
   
   int getCellValue() {
-    if (!(_row>=0 && _row<=3 && _cell>=0 && _cell<=3)) {
-      return -1;
-    }
-    
-    if (_direction == Move.left) {
-      return _grid.getElement(_row, _cell);      
-    } else if (_direction == Move.right) {
-      return _grid.getElement(_row, 3-_cell);
-    } else if (_direction == Move.up) {
-      return _grid.getElement(_cell, _row);
-    } else if (_direction == Move.down) {
-      return _grid.getElement(3-_cell, _row);
-    }
-    
-    return -1;
+    GridCoordinates c = getGridCoordinates();
+    return _grid.getValue(c.x, c.y);
   }
   
-  void setCellValue(int value) {
-    if (!(_row>=0 && _row<=3 && _cell>=0 && _cell<=3)) {
-      return;
+  void setCellValue(int value) {    
+    GridCoordinates c = getGridCoordinates();
+    _grid.setValue(c.x, c.y, value);
+  }
+  
+  //getGridCoordinates()
+  //Translates _row and _cell values to GridCoordinates.
+  GridCoordinates getGridCoordinates(){    
+    if (_direction == Move.left) {
+      return new GridCoordinates(_row, _cell);  
+    } else if (_direction == Move.right) {
+      return new GridCoordinates(_row, 3-_cell);
+    } else if (_direction == Move.up) {
+      return new GridCoordinates(_cell, _row);
+    } else if (_direction == Move.down) {
+      return new GridCoordinates(3-_cell, _row);
     }
     
-    if (_direction == Move.left) {
-      _grid.setElement(_row, _cell, value);      
-    } else if (_direction == Move.right) {
-      _grid.setElement(_row, 3-_cell, value);
-    } else if (_direction == Move.up) {
-      _grid.setElement(_cell, _row, value);
-    } else if (_direction == Move.down) {
-      _grid.setElement(3-_cell, _row, value);
-    }
+    return new GridCoordinates(-1, -1);
   }
   
 }

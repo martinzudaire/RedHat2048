@@ -18,6 +18,8 @@ class Game implements Observer {
   static final Game _instance = new Game._internal();
   
   WebRequest webRequest;
+  WebRequest webRequestServer;
+  WebRequest webRequestClient;
   GameState _currentGameState;
   bool _playersTurn;
   
@@ -29,11 +31,11 @@ class Game implements Observer {
   
   // Private constructor
   Game._internal() {
-    this.webRequest = new GameLogic();  // <--- Create either WebRequest or GameLogic
+    this.webRequest = new WebRequest();
     this._currentGameState = new GameState(); 
     this._playersTurn = false;
     this._listObservers = new List<Observer>();
-    
+
     this.webRequest.addObserver(this);
   }
   
@@ -42,9 +44,12 @@ class Game implements Observer {
   static void newGame() => _instance._newGame();
   static void move(Move move) => _instance._move(move);
   static GameState getCurrentGameState() => _instance._getCurrentGameState();
+  static void setServerGame() => _instance._setServerGame();
+  static void setClientGame() => _instance._setClientGame();
   
   static void addObserver(Observer o) => _instance._addObserver(o);
   static void removeObserver(Observer o) => _instance._removeObserver(o);
+  
   
   // PUBLIC NON STATIC methods  
   void notify() => _notify();
@@ -64,6 +69,18 @@ class Game implements Observer {
   }
   
   GameState _getCurrentGameState() => _currentGameState;
+  
+  void _setServerGame() {
+    if (webRequest!=null) webRequest.removeObserver(this);
+    this.webRequest = new WebRequest();
+    this.webRequest.addObserver(this);
+  }
+  
+  void _setClientGame() {
+    if (webRequest!=null) webRequest.removeObserver(this);
+    this.webRequest = new GameLogic();
+    this.webRequest.addObserver(this);
+  }
 
   
   //WebRequest calls this when it pulls the latest gamestate from the server
