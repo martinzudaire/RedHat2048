@@ -4,6 +4,13 @@ import 'grid.dart';
 import 'move.dart';
 import 'grid_coordinates.dart';
 
+///
+/// GRID ITERATOR
+/// 
+/// Grid iterator.
+/// 
+///
+
 class GridIterator {
   
   Grid _grid;
@@ -11,6 +18,7 @@ class GridIterator {
   int _row;
   int _cell;
   
+  //Constructor
   GridIterator(Grid grid, Move direction) {
     this._grid = grid;
     this._direction = direction;
@@ -59,15 +67,20 @@ class GridIterator {
   bool isLastCell() => (_cell==3);
   bool isCellDone() => (_cell>3);
   
+  
+  //getCellValue()
   int getCellValue() {
     GridCoordinates c = getGridCoordinates();
     return _grid.getValue(c.x, c.y);
   }
   
+  
+  //setCellValue()
   void setCellValue(int value) {    
     GridCoordinates c = getGridCoordinates();
     _grid.setValue(c.x, c.y, value);
   }
+  
   
   //getGridCoordinates()
   //Translates _row and _cell values to GridCoordinates.

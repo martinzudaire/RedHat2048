@@ -3,15 +3,15 @@ library move;
 ///
 /// MOVE
 ///
+/// Move.
 ///
 
 class Move {
   
-  static Move up = new Move._internal(0);
-  static Move right = new Move._internal(1);
-  static Move down = new Move._internal(2);
-  static Move left = new Move._internal(3);
-  static Move none = new Move._internal(-1); //TODO CHECK <-- This upsets the balance of the universe, use 'null' instead
+  static final Move up = new Move._internal(0);
+  static final Move right = new Move._internal(1);
+  static final Move down = new Move._internal(2);
+  static final Move left = new Move._internal(3);
   
   int _value;
   
@@ -21,8 +21,4 @@ class Move {
   
   toString() => _value.toString();  
   
-  int getValue()
-  {
-    return this._value;
-  }
 }

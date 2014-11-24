@@ -11,7 +11,7 @@ import 'observer.dart';
 /// WEBREQUEST
 /// 
 /// Async. Handles all the JSON. 
-/// Notifies Game when it receives and parses the json from the server.
+/// Notifies Game when it obtains and parses the JSON from the server.
 ///
 
 
@@ -21,16 +21,18 @@ class WebRequest {
   static String state_url = "http://nodejs2048-universidades.rhcloud.com/hi/state/";
   
   String _sessionId;
-  GameState _lastGameState;
-  
+  GameState _lastGameState;  
   List<Observer> _listObservers;
   
+  //Constructor
   WebRequest() {
     this._sessionId = null;
     this._lastGameState = null;
     this._listObservers = new List<Observer>();
   }
   
+  
+  //getFirstState()
   void getFirstState() {    
     HttpRequest.getString(start_url).then((String fileContents) {
       _processData(fileContents);
@@ -39,6 +41,8 @@ class WebRequest {
     });
   }
   
+  
+  //getState()
   void getState() {
     String url = state_url + _sessionId + "/json";
     HttpRequest.getString(url).then((String fileContents) {
@@ -48,6 +52,8 @@ class WebRequest {
     });
   }
   
+  
+  //postMove()
   void postMove(Move move) {
     String url = state_url + _sessionId + "/move/" + move.toString() + "/json";
     HttpRequest.getString(url).then((String fileContents) {
@@ -57,21 +63,25 @@ class WebRequest {
     });
   }
   
+  
   GameState getGameState() => _lastGameState;
   
-  //Observable methods
+  
+  //addObserver()
   void addObserver(Observer o) {
     if (o!=null) {
       _listObservers.add(o);
     }
   }
   
+  //removeObserver()
   void removeObserver(Observer o) {
     if (o!=null) {
       _listObservers.remove(o);
     }
   }
   
+  //notifyObservers()
   void notifyObservers() {
     for (Observer o in _listObservers) {
       o.notify();
@@ -79,10 +89,9 @@ class WebRequest {
   }
   
   
-  //PRIVATE
-  
-  void _processData(String data) {
-    
+  //_processData()
+  //Private. 
+  void _processData(String data) {    
     int start = 9;
     int end;
     String text;

@@ -4,250 +4,217 @@ import 'game_solver.dart';
 import 'game.dart';
 import 'move.dart';
 import 'grid.dart';
+import 'grid_coordinates.dart';
+import 'grid_iterator.dart';
+import 'game_logic.dart';
+import 'game_state.dart';
 
 ///
 /// SOLVER DECRECIMIENTO
 ///
-/// Calculates the moves based on maximazing the amount of decrecimientos.
+/// TODO Calculates the moves based on maximazing the amount of decrecimientos. (?)
 ///
 
 class SolverDecrecimiento extends GameSolver {
   
-  Move globalMove = Move.none;
-  int globalDirectionX = 0;
-  int globalDirectionY = 0;
+  Move _globalMove = null; //used to be a Move.none, now he's a cool null
+  int _globalDirectionX = 0;
+  int _globalDirectionY = 0;
   
-  SolverDecrecimiento() 
-  {
-    
-  }
+  //Constructor
+  SolverDecrecimiento(){}
   
-  void move() 
-  {
-    Grid testGrid = Game.getCurrentGameState().getGrid().clone(); //this is the current grid getting it from currentGameState
-    int moves = Game.getCurrentGameState().getMoves();
-    List<int> punto = this.puntoMasGrande(testGrid);
-    List<int> auxpunto = new List<int>();
-    bool esquinado = false;
-    int depth = 0;
+  
+  //move()
+  //Entry point in the solver algorithm.
+  //TODO Explanation of code below.
+  void move() {
+    GameState gameState = Game.getCurrentGameState();
+    int moves = gameState.getMoves();
+
+    GridCoordinates cellHighestValue = findCellWithHighestValue(gameState.getGrid().clone()); 
+    GridCoordinates auxCell = new GridCoordinates(0,0);
+    int depth;
     
-    auxpunto.add(0);
-    auxpunto.add(0);
-    //no importa mucho esta parte, solo corro donde comienzan los caminos a las esquinas
-    //muy probablemente lo cambie
-    auxpunto[0] = ((punto[0]+0.25)/2.0).truncate()*3;
-    auxpunto[1] = ((punto[1]+0.25)/2.0).truncate()*3;
-    esquinado = (punto[0]==auxpunto[0] && punto[1]==auxpunto[1]);
-    //punto[0] = auxpunto[0];
-    //punto[1] = auxpunto[1];
+    _globalMove = null;
     
-    this.globalMove = Move.none;
+    if (!isCornered(cellHighestValue)) {
+      _globalMove = pushToCorner(gameState);
+    }    
     
-    this.volverEsquina(testGrid,esquinado);
-    
-    if(moves>=300)
-    {
+    depth = 3; //TODO Why can't depth be 3 all the time?
+    /*if(moves>=300) {
       depth = 3;
-    }
-    if(moves<300)
-    {
+    } else if(moves<300) {
       depth = 2;
-    }
-    if(moves<200)
-    {
+    } else if(moves<200) {
       depth = 1;
-    }
-    if(moves<100)
-    {
+    } else if(moves<100) {
       depth = 0;
-    }
+    }*/
     
     
-    if(this.globalMove == Move.none)
-    {
+    if(_globalMove==null) {
       List<Move> prevMoves = new List<Move>();
-      this.getMove(testGrid, punto, depth, prevMoves, 0);
+      calculateMove(gameState, cellHighestValue, depth, prevMoves);
     }
     
-    Game.move(this.globalMove);
+    Game.move(_globalMove);
   }
   
-  List<int> getMove(Grid testGrid, List<int> punto, int depth, List<Move> pMoves, int amountMoves)
-  {
-    List<int> decrecimientos = new List<int>(); //array that will contain the different amount of decrecimientos from up/down/left/right
-    List<Move> prevMoves = this.cloneList(pMoves,amountMoves);
+  
+  //pushToCorner()
+  //Simulates all possible moves until we find one where the highest value is 
+  //in a corner. Returns that move.  
+  Move pushToCorner(GameState gameState) {
+    GameLogic gameLogic = new GameLogic();
+    GameState gs;
+    
+    gs = gameLogic.simulateMove(gameState, Move.up);
+    if (isCornered(findCellWithHighestValue(gs.getGrid()))) {
+      return Move.up;
+    }
+    
+    gs = gameLogic.simulateMove(gameState, Move.down);
+    if (isCornered(findCellWithHighestValue(gs.getGrid()))) {
+      return Move.down;
+    }
+    
+    gs = gameLogic.simulateMove(gameState, Move.right);
+    if (isCornered(findCellWithHighestValue(gs.getGrid()))) {
+      return Move.right;
+    }
+    
+    gs = gameLogic.simulateMove(gameState, Move.left);
+    if (isCornered(findCellWithHighestValue(gs.getGrid()))) {
+      return Move.left;
+    }
+    
+    return null; //Couldn't put the highest value in the corner.
+  }
+  
+  
+  //calculateMove()
+  //Recursive. 
+  //TODO I have no clue whatsoever what this does. Add explanation
+  List<int> calculateMove(GameState gameState, GridCoordinates cellHighestValue, int depth, List<Move> prevMoves) {
+    List<int> decrecimientos = new List<int>(); //array that will contain the different amount of decrecimientos from up/down/left/right.
     List<Move> moveList = new List<Move>();
     List<int> depthList = new List<int>();
-    int count = 0;
     List<int> aux = new List<int>();
-    Grid moveGrid = testGrid.clone();
     List<int> temp;
     List<int> returnList = new List<int>();
+    GameLogic gameLogic = new GameLogic();
+    GameState gs;
     
-    //arriba
-    moveGrid.simulateMoveUp();
-    if(isInList(prevMoves, amountMoves, Move.down) == false && moveGrid.compareGrid(testGrid) != 0)
-    {
-      aux = this.maxDecrecimientosList(moveGrid,punto[0],punto[1],true,0,0,false);
+    //Up
+    gs = gameLogic.simulateMove(gameState, Move.up);
+    if (!prevMoves.contains(Move.down) && gs.hasMoved()) {
+      aux = calculateMaxDecrecimientos(gs.getGrid(), cellHighestValue, true, false);
       decrecimientos.add(aux[1]);
       moveList.add(Move.up);
       depthList.add(depth);
-      count++;
-      if(depth != 0 && aux[1] != 0)
-      {
-        prevMoves.add(Move.up);
-        temp = this.getMove(moveGrid, punto, depth-1, prevMoves, amountMoves+1);
-        if(temp[0] != -1)
-        {
+      
+      if (depth != 0 && aux[1] != 0) {
+        List<Move> newPrevMoves = cloneListMove(prevMoves);
+        newPrevMoves.add(Move.up);
+        temp = calculateMove(gs, cellHighestValue, depth-1, newPrevMoves);
+        if (temp[0] != -1) {
           decrecimientos.add(temp[0]);
           moveList.add(Move.up);
           depthList.add(temp[1]);
-          count++;
         }
       }
     }
-    prevMoves = this.cloneList(pMoves,amountMoves);
-    moveGrid = testGrid.clone();
-    //abajo
-    moveGrid.simulateMoveDown();
-    if(isInList(prevMoves, amountMoves, Move.up) == false && moveGrid.compareGrid(testGrid) != 0)
-    {
-      aux = this.maxDecrecimientosList(moveGrid,punto[0],punto[1],true,0,0,false);
+    
+    //Down
+    gs = gameLogic.simulateMove(gameState, Move.down);
+    if (!prevMoves.contains(Move.up) && gs.hasMoved()) {
+      aux = calculateMaxDecrecimientos(gs.getGrid(), cellHighestValue, true, false);
       decrecimientos.add(aux[1]);
       moveList.add(Move.down);
       depthList.add(depth);
-      count++;
-      if(depth != 0 && aux[1] != 0)
-      {
-        prevMoves.add(Move.down);
-        temp = this.getMove(moveGrid, punto, depth-1, prevMoves, amountMoves+1);
-        if(temp[0] != -1)
-        {
+
+      if (depth != 0 && aux[1] != 0) {
+        List<Move> newPrevMoves = cloneListMove(prevMoves);
+        newPrevMoves.add(Move.down);
+        temp = calculateMove(gs, cellHighestValue, depth-1, newPrevMoves);
+        if (temp[0] != -1) {
           decrecimientos.add(temp[0]);
           moveList.add(Move.down);
           depthList.add(temp[1]);
-          count++;
         }
       }
     }
-    prevMoves = this.cloneList(pMoves,amountMoves);
-    moveGrid = testGrid.clone();
-    //derecha
-    moveGrid.simulateMoveRight();
-    if(isInList(prevMoves, amountMoves, Move.left) == false && moveGrid.compareGrid(testGrid) != 0)
-    {
-      aux = this.maxDecrecimientosList(moveGrid,punto[0],punto[1],true,0,0,false);
+
+    //Right
+    gs = gameLogic.simulateMove(gameState, Move.right);
+    if (!prevMoves.contains(Move.left) && gs.hasMoved()) {
+      aux = calculateMaxDecrecimientos(gs.getGrid(), cellHighestValue, true, false);
       decrecimientos.add(aux[1]);
       moveList.add(Move.right);
       depthList.add(depth);
-      count++;
-      if(depth != 0 && aux[1] != 0)
-      {
-        prevMoves.add(Move.right);
-        temp = this.getMove(moveGrid, punto, depth-1, prevMoves, amountMoves+1);
-        if(temp[0] != -1)
-        {
+
+      if (depth != 0 && aux[1] != 0) {
+        List<Move> newPrevMoves = cloneListMove(prevMoves);
+        newPrevMoves.add(Move.right);
+        temp = calculateMove(gs, cellHighestValue, depth-1, newPrevMoves);
+        if (temp[0] != -1) {
           decrecimientos.add(temp[0]);
           moveList.add(Move.right);
           depthList.add(temp[1]);
-          count++;
         }
       }
     }
-    prevMoves = this.cloneList(pMoves,amountMoves);
-    moveGrid = testGrid.clone();
-    //izquierda
-    moveGrid.simulateMoveLeft();
-    if(isInList(prevMoves, amountMoves, Move.right) == false && moveGrid.compareGrid(testGrid) != 0)
-    {
-      aux = this.maxDecrecimientosList(moveGrid,punto[0],punto[1],true,0,0,false);
+
+    //Left
+    gs = gameLogic.simulateMove(gameState, Move.left);
+    if (!prevMoves.contains(Move.right) && gs.hasMoved()) {
+      aux = calculateMaxDecrecimientos(gs.getGrid(), cellHighestValue, true, false);
       decrecimientos.add(aux[1]);
       moveList.add(Move.left);
       depthList.add(depth);
-      count++;
-      if(depth != 0 && aux[1] != 0)
-      {
-        prevMoves.add(Move.left);
-        temp = this.getMove(moveGrid, punto, depth-1, prevMoves, amountMoves+1);
-        if(temp[0] != -1)
-        {
+
+      if (depth != 0 && aux[1] != 0) {
+        List<Move> newPrevMoves = cloneListMove(prevMoves);
+        newPrevMoves.add(Move.left);
+        temp = calculateMove(gs, cellHighestValue, depth-1, newPrevMoves);
+        if (temp[0] != -1) {
           decrecimientos.add(temp[0]);
           moveList.add(Move.left);
           depthList.add(temp[1]);
-          count++;
         }
       }
     }
+    
+    
     //me quedo con el que maximice la cantidad de decrecimientos
-    if(count>0)
-    {
+    if (decrecimientos.length>0) {
       int max = 0;
-      for(int i=1; i<count; i++)
-      {
-        if(decrecimientos[i] > decrecimientos[max])
-        {
+      
+      for (int i=1; i<decrecimientos.length; i++) {
+        if (decrecimientos[i] > decrecimientos[max]) {
           max = i;
-        } else if(decrecimientos[i] == decrecimientos[max])
-        {
-          if(depthList[i] > depthList[max])
-          {
+        } else if (decrecimientos[i] == decrecimientos[max]) {
+          if(depthList[i] > depthList[max]) {
             max = i;
           }
         }
       }
-      this.globalMove = moveList[max];
+   
+      _globalMove = moveList[max];
       returnList.add(decrecimientos[max]);
       returnList.add(depthList[max]);
-      return returnList;
+      
+    } else {
+      returnList.add(-1);
+      returnList.add(depth);
     }
-    returnList.add(-1);
-    returnList.add(depth);
+    
     return returnList;
+    
   }
   
-  void volverEsquina(Grid grid, bool esquinado)
-  {
-    if(esquinado == true)
-    {
-      return;
-    }
-    Grid moveGrid = grid.clone();
-    
-    //arriba
-    moveGrid.simulateMoveUp();
-    if(this.enEsquina(this.puntoMasGrande(moveGrid)) == true)
-    {
-      this.globalMove = Move.up;
-      return;
-    }
-    moveGrid = grid.clone();
-    
-    //abajo
-    moveGrid.simulateMoveDown();
-    if(this.enEsquina(this.puntoMasGrande(moveGrid)) == true)
-    {
-      this.globalMove = Move.down;
-      return;
-    }
-    moveGrid = grid.clone();
-    
-    //derecha
-    moveGrid.simulateMoveRight();
-    if(this.enEsquina(this.puntoMasGrande(moveGrid)) == true)
-    {
-      this.globalMove = Move.right;
-      return;
-    }
-    moveGrid = grid.clone();
-
-    //izquierda
-    moveGrid.simulateMoveLeft();
-    if(this.enEsquina(this.puntoMasGrande(moveGrid)) == true)
-    {
-      this.globalMove = Move.left;
-      return;
-    }
-  }
   
   /*
    * Really cool algorithm that solves the game.
@@ -257,219 +224,174 @@ class SolverDecrecimiento extends GameSolver {
    * la mayor suma de elementos. Por ejemplo si tenemos dos caminos que empiezan de un punto de valor 16 y son 16-16-2 y 16-8-4-2 nos
    * quedamos con el de 16-16-2.
    */
-  List<int> maxDecrecimientosList(Grid grid, int x, int y, bool first, int direcX, int direcY, bool breakZigZag)
-  {
+  
+  //calculateMaxDecrecimientos()
+  //Recursive.
+  //TODO I have no clue what this does either. Explanation.
+  List<int> calculateMaxDecrecimientos(Grid grid, GridCoordinates cell, bool isFirst, bool breakZigZag) {
     List<int> count = new List<int>();
     List<int> addedcount = new List<int>();
-    int max = 300000; //es medio bestia pero reemplazo el valor actual (x,y) para que cuando entremos en la recursion no vuelva por el camino que vino
-    int aux = grid.getValue(x, y);
-    int elements = 0; 
+    int cellValue = grid.getValue(cell.x, cell.y);
+    int max = 300000; //Just 'cause
     List<int> returnList = new List<int>();
     List<int> auxList;
     bool auxZigZag;
     
-    if(aux == 0) //dejar de contar si nos encontramos un cero
-    {
+    if(cellValue==0) { //stop if we find a zero
       returnList.add(-1);
       returnList.add(0);
       return returnList;
     }
     
-    if(this.outOfBounds(x+1,y) == false && grid.getValue(x, y) >= grid.getValue(x+1, y)) //abajo
-    {
-      this.factor(1, 0, x, y, first, breakZigZag);
-      auxZigZag = (this.factor(1, 0, x, y, false, breakZigZag) == 1);
-      grid.setValue(x, y, max);
-      auxList = this.maxDecrecimientosList(grid,x+1,y,false,1,0,auxZigZag);
+    //Down
+    if(!grid.isOutOfBounds(cell.x+1,cell.y) && grid.getValue(cell.x, cell.y) >= grid.getValue(cell.x+1, cell.y)) {
+      factor(1, 0, cell, isFirst, breakZigZag);
+      auxZigZag = (factor(1, 0, cell, false, breakZigZag) == 1);
+      grid.setValue(cell.x, cell.y, max);
+      
+      auxList = calculateMaxDecrecimientos(grid, new GridCoordinates(cell.x+1,cell.y), false, auxZigZag);
       count.add(auxList[0]+1);
-      addedcount.add(auxList[1]+aux*this.factor(1, 0, x, y, false, breakZigZag));
-      grid.setValue(x, y, aux);
-      if(grid.getValue(x, y) == grid.getValue(x+1, y))
-      {
-        addedcount[elements]--;
+      addedcount.add(auxList[1]+cellValue*factor(1, 0, cell, false, breakZigZag));
+      grid.setValue(cell.x, cell.y, cellValue);
+      if(grid.getValue(cell.x, cell.y) == grid.getValue(cell.x+1, cell.y)) {
+        addedcount[addedcount.length-1]--;
       }
-      elements++;
-    }
-    if(this.outOfBounds(x-1,y) == false && grid.getValue(x, y) >= grid.getValue(x-1, y)) //arriba
-    {
-      this.factor(1, 0, x, y, first, breakZigZag);
-      auxZigZag = (this.factor(1, 0, x, y, false, breakZigZag) == 1);
-      grid.setValue(x, y, max);
-      auxList = this.maxDecrecimientosList(grid,x-1,y,false,-1,0,auxZigZag);
-      count.add(auxList[0]+1);
-      addedcount.add(auxList[1]+aux*this.factor(1, 0, x, y, false, breakZigZag));
-      grid.setValue(x, y, aux);
-      if(grid.getValue(x, y) == grid.getValue(x-1, y))
-      {
-        addedcount[elements]--;
-      }
-      elements++;
-    }
-    if(this.outOfBounds(x,y+1) == false && grid.getValue(x, y) >= grid.getValue(x, y+1)) //derecha
-    {
-      this.factor(0, 1, x, y, first, breakZigZag);
-      auxZigZag = (this.factor(0, 1, x, y, false, breakZigZag) == 1);
-      grid.setValue(x, y, max);
-      auxList = this.maxDecrecimientosList(grid,x,y+1,false,0,1,auxZigZag);
-      count.add(auxList[0]+1);
-      addedcount.add(auxList[1]+aux*this.factor(0, 1, x, y, false, breakZigZag));
-      grid.setValue(x, y, aux);
-      if(grid.getValue(x, y) == grid.getValue(x, y+1))
-      {
-        addedcount[elements]--;
-      }
-      elements++;
-    }
-    if(this.outOfBounds(x,y-1) == false && grid.getValue(x, y) >= grid.getValue(x, y-1)) //izquierda
-    {
-      this.factor(0, 1, x, y, first, breakZigZag);
-      auxZigZag = (this.factor(0, 1, x, y, false, breakZigZag) == 1);
-      grid.setValue(x, y, max);
-      auxList = this.maxDecrecimientosList(grid,x,y-1,false,0,-1,auxZigZag);
-      count.add(auxList[0]+1);
-      addedcount.add(auxList[1]+aux*this.factor(0, 1, x, y, false, breakZigZag));
-      grid.setValue(x, y, aux);
-      if(grid.getValue(x, y) == grid.getValue(x, y-1))
-      {
-        addedcount[elements]--;
-      }
-      elements++;
     }
     
-    if(elements != 0) //si esta vacio es porque no hay camino para ningun lado
-    {
+    //Up
+    if(!grid.isOutOfBounds(cell.x-1,cell.y) && grid.getValue(cell.x, cell.y) >= grid.getValue(cell.x-1, cell.y)) {
+      factor(-1, 0, cell, isFirst, breakZigZag);
+      auxZigZag = (factor(1, 0, cell, false, breakZigZag) == 1);
+      grid.setValue(cell.x, cell.y, max);
+      
+      auxList = calculateMaxDecrecimientos(grid, new GridCoordinates(cell.x-1, cell.y), false, auxZigZag);
+      count.add(auxList[0]+1);
+      addedcount.add(auxList[1]+cellValue*factor(1, 0, cell, false, breakZigZag));
+      grid.setValue(cell.x, cell.y, cellValue);
+      if(grid.getValue(cell.x, cell.y) == grid.getValue(cell.x-1, cell.y)) {
+        addedcount[addedcount.length-1]--;
+      }
+    }
+    
+    //Right
+    if (!grid.isOutOfBounds(cell.x,cell.y+1) && grid.getValue(cell.x, cell.y) >= grid.getValue(cell.x, cell.y+1)) {
+      factor(0, 1, cell, isFirst, breakZigZag);
+      auxZigZag = (factor(0, 1, cell, false, breakZigZag) == 1);
+      grid.setValue(cell.x, cell.y, max);
+      
+      auxList = calculateMaxDecrecimientos(grid, new GridCoordinates(cell.x, cell.y+1), false, auxZigZag);
+      count.add(auxList[0]+1);
+      addedcount.add(auxList[1]+cellValue*factor(0, 1, cell, false, breakZigZag));
+      grid.setValue(cell.x, cell.y, cellValue);
+      if(grid.getValue(cell.x, cell.y) == grid.getValue(cell.x, cell.y+1)) {
+        addedcount[addedcount.length-1]--;
+      }
+    }
+    
+    //Left
+    if (!grid.isOutOfBounds(cell.x,cell.y-1) && grid.getValue(cell.x, cell.y) >= grid.getValue(cell.x, cell.y-1)) {
+      factor(0, -1, cell, isFirst, breakZigZag);
+      auxZigZag = (factor(0, 1, cell, false, breakZigZag) == 1);
+      grid.setValue(cell.x, cell.y, max);
+      
+      auxList = calculateMaxDecrecimientos(grid, new GridCoordinates(cell.x, cell.y-1), false, auxZigZag);
+      count.add(auxList[0]+1);
+      addedcount.add(auxList[1]+cellValue*factor(0, 1, cell, false, breakZigZag));
+      grid.setValue(cell.x, cell.y, cellValue);
+      if(grid.getValue(cell.x, cell.y) == grid.getValue(cell.x, cell.y-1)) {
+        addedcount[addedcount.length-1]--;
+      }
+    }
+    
+    if(addedcount.length != 0) { //si esta vacio es porque no hay camino para ningun lado
       int maxcount = 0;
-      for(int i=1; i<elements; i++)
-      {
-        if(addedcount[i] > addedcount[maxcount]) //nos quedamos con el mas grande
-        {
+      
+      for(int i=1; i<addedcount.length; i++) {
+        if(addedcount[i] > addedcount[maxcount]) { //nos quedamos con el mas grande
           maxcount = i;
         }
       }
+      
       returnList.add(count[maxcount]);
       returnList.add(addedcount[maxcount]);
       return returnList;
     }
+    
     returnList.add(0);
     returnList.add(0);
     return returnList;
   }
   
-  bool outOfBounds(int x, int y)
-  {
-    if(x>=0 && x<4 && y>=0 && y<4)
-    {
-      return false;
+  
+  //findCellWithHighestValue()
+  //Finds the cell with the highest cell value, and then returns its GridCoordinates
+  GridCoordinates findCellWithHighestValue(Grid grid) {    
+    GridIterator iterator = new GridIterator(grid, Move.right);
+    GridCoordinates coordinates;
+    int highestValue = 0;
+    
+    while (!iterator.isRowDone()) {      
+      while (!iterator.isCellDone()) {
+        
+        if (iterator.getCellValue() > highestValue) { //If it's the highest value save coordinates
+          coordinates = iterator.getGridCoordinates();
+          
+        } else if (iterator.getCellValue() == highestValue) { //If value is equal, check if corner. If so, save.
+          GridCoordinates c = iterator.getGridCoordinates();
+          if (isCornered(c)) {
+            coordinates = c;
+          }          
+        }
+        
+        iterator.nextCell();
+      }      
+      iterator.nextRow();
+      iterator.firstCell();      
     }
-    return true;
+    
+    return coordinates;    
+  }
+  
+  
+  //isCornered()
+  //Returns true if coordinates are that of a corner of a grid
+  bool isCornered(GridCoordinates coordinates) {
+    return ((coordinates.x==0 || coordinates.x==3) && (coordinates.y==0 || coordinates.y==3));
   }
 
-  int logaritmo(int element)
-  {
-    int x=0;
-    int current = element;
-    if(element == 0)
-    {
-      return 0;
-    }
-    while(element%2 == 0)
-    {
-      x++;
-      element = (element/2).round();
-    }
-    return x;
-  }
   
-  List<int> puntoMasGrande(Grid grid)
-  {
-    int aux1,aux2;
-    List<int> punto = new List<int>();
-    punto.add(0);
-    punto.add(0);
-    int valor = 0;
-    
-    for(int i=0; i<4; i++)
-    {
-      for(int j=0; j<4; j++)
-      {
-        if(grid.getValue(i, j) > valor)
-        {
-          punto[0] = i;
-          punto[1] = j;
-          valor = grid.getValue(i, j);
-        } else if(grid.getValue(i, j) == valor)
-        {
-          aux1 = ((i+0.25)/2.0).truncate()*3;
-          aux2 = ((j+0.25)/2.0).truncate()*3; 
-          if(i==aux1 && j==aux2)
-          {
-            punto[0] = i;
-            punto[1] = j;
-            valor = grid.getValue(i, j);
-          }
-        }
-      }
-    }
-    return punto;
-  }
-  
-  bool enEsquina(List<int> punto)
-  {
-    List<int> auxpunto = new List<int>();
-    auxpunto.add(0);
-    auxpunto.add(0);
-    auxpunto[0] = ((punto[0]+0.25)/2.0).truncate()*3;
-    auxpunto[1] = ((punto[1]+0.25)/2.0).truncate()*3;
-    return (punto[0]==auxpunto[0] && punto[1]==auxpunto[1]);
-  }
-  
-  List<Move> cloneList(List<Move> moves, int amount)
-  {
+  //cloneListMove()
+  //Clones and returns a list of Move elements.
+  List<Move> cloneListMove(List<Move> moves) {
     List<Move> list = new List<Move>();
-    for(int i=0; i<amount; i++)
-    {
+    for(int i=0; i<moves.length; i++) {
       list.add(moves[i]);
     }
     return list;
   }
   
-  bool isInList(List<Move> list, int length, Move element)
-  {
-    for(int i=0; i<length; i++)
-    {
-      if(list[i] == element)
-      {
-        return true;
-      }
-    }
-    return false;
-  }
   
-  int factor(int currentx, int currenty, int x, int y, bool first, bool breakZigZag)
-  {
-    List<int> punto = new List<int>();
-    punto.add(x);
-    punto.add(y);
-    if(breakZigZag == true)
-    {
+  //factor()
+  //TODO Returns 1 or 2 if weird conditions are met.
+  int factor(int currentx, int currenty, GridCoordinates cell, bool first, bool breakZigZag) {
+    if(breakZigZag) {
+      return 1;
+      
+    } else if (first) {
+      _globalDirectionX = currentx.abs(); 
+      _globalDirectionY = currenty.abs();
+      return 2;
+    
+    } else if (isCornered(cell)) {
+      return 2;
+      
+    } else if(currentx.abs() == _globalDirectionX && currenty.abs() == _globalDirectionY) {
+      return 2;
+    
+    } else {
       return 1;
     }
-    if(first == true)
-    {
-      this.globalDirectionX = currentx;
-      this.globalDirectionY = currenty;
-      return 2;
-    } else
-    {
-      if(this.enEsquina(punto) == true)
-      {
-        return 2;
-      }
-      if(currentx == this.globalDirectionX && currenty == this.globalDirectionY)
-      {
-        return 2;
-      }
-    }
-    return 1;
   }
+  
+  
 }
