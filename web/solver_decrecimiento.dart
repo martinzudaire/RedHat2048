@@ -12,13 +12,25 @@ import 'game_state.dart';
 ///
 /// SOLVER DECRECIMIENTO
 ///
-/// TODO Calculates the moves based on maximazing the amount of decrecimientos. (?)
+/// Solver based on a Zig-Zag stategy, prioritizing having the highest
+/// number in a corner.
+/// 
+/// The Zig-Zag is achieved by maximazing an amount called "decrecimientos"
+/// which basicly adds the numbers in a chain of previousElement>thisElement
+/// looking for the chain which has the highest value of added sum.
+/// 
+/// For each move it checks the evolution of the "decrecimientos" amount,
+/// searching for the move which maximizes this value.
+/// This move-checking is done upto "depth" times into the future (assuming
+/// no random numbers are added after each move) in a recursive fashion.
 ///
 
 class SolverDecrecimiento extends GameSolver {
   
-  Move _globalMove = null; //used to be a Move.none, now he's a cool null
-  int _globalDirectionX = 0;
+  Move _globalMove = null; //variable holding the move that will be done this round
+  
+  //set of variables used to encourage the Zig-Zag
+  int _globalDirectionX = 0; 
   int _globalDirectionY = 0;
   
   //Constructor
@@ -27,38 +39,35 @@ class SolverDecrecimiento extends GameSolver {
   
   //move()
   //Entry point in the solver algorithm.
-  //TODO Explanation of code below.
+  //Decision making (choose one option):
+  //-Put highest value in corner.
+  //-Calculate the best move.
   void move() {
     GameState gameState = Game.getCurrentGameState();
     int moves = gameState.getMoves();
-
-    GridCoordinates cellHighestValue = findCellWithHighestValue(gameState.getGrid().clone()); 
-    GridCoordinates auxCell = new GridCoordinates(0,0);
     int depth;
+
+    //Get cell with highest value in the grid.
+    GridCoordinates cellHighestValue = findCellWithHighestValue(gameState.getGrid().clone()); 
     
     _globalMove = null;
     
+    //Check if the highest valued cell is in a corner.
+    //If not try to move it there.
     if (!isCornered(cellHighestValue)) {
       _globalMove = pushToCorner(gameState);
     }    
     
-    depth = 3; //TODO Why can't depth be 3 all the time?
-    /*if(moves>=300) {
-      depth = 3;
-    } else if(moves<300) {
-      depth = 2;
-    } else if(moves<200) {
-      depth = 1;
-    } else if(moves<100) {
-      depth = 0;
-    }*/
+    depth = 3;
     
-    
+    //If there is no move to push to corner or it is already in a corner.
+    //Run the algorithm to find the best move.
     if(_globalMove==null) {
       List<Move> prevMoves = new List<Move>();
       calculateMove(gameState, cellHighestValue, depth, prevMoves);
     }
     
+    //make the move
     Game.move(_globalMove);
   }
   
@@ -96,11 +105,15 @@ class SolverDecrecimiento extends GameSolver {
   
   //calculateMove()
   //Recursive. 
-  //TODO I have no clue whatsoever what this does. Add explanation
+  //Calculates move based on which move or combination of moves (depending on the
+  //value of depth) reaches the highest value of "decrecimientos".
+  //Since we explore movements until a combination of depth+1 moves we do this in
+  //a recursive way.
+  //
   List<int> calculateMove(GameState gameState, GridCoordinates cellHighestValue, int depth, List<Move> prevMoves) {
     List<int> decrecimientos = new List<int>(); //array that will contain the different amount of decrecimientos from up/down/left/right.
-    List<Move> moveList = new List<Move>();
-    List<int> depthList = new List<int>();
+    List<Move> moveList = new List<Move>(); //array to contain the different moves involved
+    List<int> depthList = new List<int>(); //array to associate each move and decrecimientos to a certain depth in moves in the future
     List<int> aux = new List<int>();
     List<int> temp;
     List<int> returnList = new List<int>();
@@ -108,17 +121,31 @@ class SolverDecrecimiento extends GameSolver {
     GameState gs;
     
     //Up
+    //We first simulate the up move in an auxiliary grid.
+    //Then we check if this the opposite move (in this case down) hasn't been done
+    //in the previous moves (thinking about previous move in the context of depth).
+    //Example: We first simulate move down, when we try to simulate then the up
+    //move it will skip tis move.
+    //This is done to avoid chains like down-up (which may be the same as nothing)
+    //and down-left-up. Better decision making with this option on.
+    //We finally check if the move in question actually changed something in the grid.
+    //This means it is a valid move.
     gs = gameLogic.simulateMove(gameState, Move.up);
     if (!prevMoves.contains(Move.down) && gs.hasMoved()) {
+      //Get the values corresponding to the up move.
       aux = calculateMaxDecrecimientos(gs.getGrid(), cellHighestValue, true, false);
       decrecimientos.add(aux[1]);
       moveList.add(Move.up);
       depthList.add(depth);
       
+      //If we haven't reached depth=0, we continue simulating moves in the future.
+      //We also make sure that by moving in this direction we don't end up with a zero 
+      //in the spot where the highest number was.
       if (depth != 0 && aux[1] != 0) {
         List<Move> newPrevMoves = cloneListMove(prevMoves);
         newPrevMoves.add(Move.up);
         temp = calculateMove(gs, cellHighestValue, depth-1, newPrevMoves);
+        //If the return is -1 in the first element means no moves are good
         if (temp[0] != -1) {
           decrecimientos.add(temp[0]);
           moveList.add(Move.up);
@@ -188,7 +215,13 @@ class SolverDecrecimiento extends GameSolver {
     }
     
     
-    //me quedo con el que maximice la cantidad de decrecimientos
+    //From all the decrecimientos that have been calculated we select the move
+    //or chain of moves which gives the highest value.
+    //If there are 2 chains of moves which have the same decrecimientos value
+    //which is the maximum, we select the one which has the highest value of 
+    //depth (which means it has the shorter chain).
+    //We use this to prioritize the smaller chain of moves over long ones which
+    //give the same results.
     if (decrecimientos.length>0) {
       int max = 0;
       
@@ -201,12 +234,13 @@ class SolverDecrecimiento extends GameSolver {
           }
         }
       }
-   
+      //set the nextMove
       _globalMove = moveList[max];
       returnList.add(decrecimientos[max]);
       returnList.add(depthList[max]);
       
     } else {
+      //case when no moves are good or possible
       returnList.add(-1);
       returnList.add(depth);
     }
@@ -214,46 +248,54 @@ class SolverDecrecimiento extends GameSolver {
     return returnList;
     
   }
-  
-  
-  /*
-   * Really cool algorithm that solves the game.
-   * Decrecimientos: Empezamos del punto (x,y) y vemos para que lado se cumple que element(x,y) > element(siguiente punto arriba-abajo-etc)
-   * Para ese lado contamos la cantidad de decrecimientos de manera recursiva. Basicamente se buscan todos los caminos donde se cumple
-   * que cada elemento es mayor o igual al siguiente. De todos los caminos que existen a partir de un punto nos quedamos con el que tenga
-   * la mayor suma de elementos. Por ejemplo si tenemos dos caminos que empiezan de un punto de valor 16 y son 16-16-2 y 16-8-4-2 nos
-   * quedamos con el de 16-16-2.
-   */
-  
+
   //calculateMaxDecrecimientos()
   //Recursive.
-  //TODO I have no clue what this does either. Explanation.
+  //Function which calculates for any set grid which is the highest chain of 
+  //thisCell>=nextCell in added values.
+  //Parameters:
+  //-grid: Grid of the game.
+  //-cell: Position of the cell from which to start all the chains to test for highest decrecimientos.
+  //-isFirst: Boolean used to define if this is the first pass of the function, given that it's recursive.
+  //-breakZigZag: Boolean used to know whether the zig-zag condition has been broken.
   List<int> calculateMaxDecrecimientos(Grid grid, GridCoordinates cell, bool isFirst, bool breakZigZag) {
-    List<int> count = new List<int>();
-    List<int> addedcount = new List<int>();
-    int cellValue = grid.getValue(cell.x, cell.y);
-    int max = 300000; //Just 'cause
-    List<int> returnList = new List<int>();
+    List<int> count = new List<int>(); //List which contains the length of the chain. Not actually used in any way, kept for historical/debugging reasons.
+    List<int> addedcount = new List<int>(); //List which contains the added values of all the elements in the chain
+    int cellValue = grid.getValue(cell.x, cell.y); //Value of the primary cell where all chains start
+    int max = 300000; //An exagerated big number, higher than the possible values in the grid. Used to mark where the chain has already passed (not to count one same element twice).
+    List<int> returnList = new List<int>(); //The first element will contain the amount of elements in the chain. The second value in the array will have the value of decrecimientos.
     List<int> auxList;
     bool auxZigZag;
     
-    if(cellValue==0) { //stop if we find a zero
+    if(cellValue==0) { //Stop the chain if we find a zero.
       returnList.add(-1);
-      returnList.add(0);
+      returnList.add(0); //Currently added value is zero logically.
       return returnList;
     }
     
     //Down
+    //We first check if the cell immediately below this cell (the candidate to
+    //next element of the chain) is inside the grid.
+    //Then we check if the value of the candidate cell is <= this cell.
     if(!grid.isOutOfBounds(cell.x+1,cell.y) && grid.getValue(cell.x, cell.y) >= grid.getValue(cell.x+1, cell.y)) {
-      factor(1, 0, cell, isFirst, breakZigZag);
-      auxZigZag = (factor(1, 0, cell, false, breakZigZag) == 1);
-      grid.setValue(cell.x, cell.y, max);
+      factor(1, 0, cell, isFirst, breakZigZag); //The function is called to set the direction of the zig-zag.
+      auxZigZag = (factor(1, 0, cell, false, breakZigZag) == 1); //We check if moving in the x axis means breaking the zig-zag.
+      grid.setValue(cell.x, cell.y, max); //This cell value is set to the max value to avoid chain looping.
       
-      auxList = calculateMaxDecrecimientos(grid, new GridCoordinates(cell.x+1,cell.y), false, auxZigZag);
-      count.add(auxList[0]+1);
+      auxList = calculateMaxDecrecimientos(grid, new GridCoordinates(cell.x+1,cell.y), false, auxZigZag); //recursive call in said direction.
+      count.add(auxList[0]+1); //We set the current length of the chain.
+      
+      //We add to the added value of the elements of the chain (decrecimientos)
+      //the current value of the cell multiplied by a factor which is 1 or 2.
+      //More is explained of this factor in the corresponding function.
       addedcount.add(auxList[1]+cellValue*factor(1, 0, cell, false, breakZigZag));
-      grid.setValue(cell.x, cell.y, cellValue);
+      
+      grid.setValue(cell.x, cell.y, cellValue); //We restore the value of this cell to its original value
       if(grid.getValue(cell.x, cell.y) == grid.getValue(cell.x+1, cell.y)) {
+        //If we advance in the direction of a cell which has the same value as this one
+        //we discount 1 from the added count. This is used to favor having 128-64-2 rather
+        //than 128-32-32-2.
+        //Discounting one is not enough to make 8-4-2 preferable over 8-4-4.
         addedcount[addedcount.length-1]--;
       }
     }
@@ -303,11 +345,11 @@ class SolverDecrecimiento extends GameSolver {
       }
     }
     
-    if(addedcount.length != 0) { //si esta vacio es porque no hay camino para ningun lado
+    if(addedcount.length != 0) { //If the list is empty there is no way to continue the chain.
       int maxcount = 0;
       
       for(int i=1; i<addedcount.length; i++) {
-        if(addedcount[i] > addedcount[maxcount]) { //nos quedamos con el mas grande
+        if(addedcount[i] > addedcount[maxcount]) { //We keep the highest value of decrecimientos.
           maxcount = i;
         }
       }
@@ -316,7 +358,7 @@ class SolverDecrecimiento extends GameSolver {
       returnList.add(addedcount[maxcount]);
       return returnList;
     }
-    
+    //This is the list to return in case no continuing the chain is possible.
     returnList.add(0);
     returnList.add(0);
     return returnList;
@@ -336,7 +378,10 @@ class SolverDecrecimiento extends GameSolver {
         if (iterator.getCellValue() > highestValue) { //If it's the highest value save coordinates
           coordinates = iterator.getGridCoordinates();
           
-        } else if (iterator.getCellValue() == highestValue) { //If value is equal, check if corner. If so, save.
+        } else if (iterator.getCellValue() == highestValue) { 
+          //If value is equal, check if corner. If so, save.
+          //This is used to prioritize the highest value to be in the corner rather than in
+          //another place if its the same value.
           GridCoordinates c = iterator.getGridCoordinates();
           if (isCornered(c)) {
             coordinates = c;
@@ -372,20 +417,35 @@ class SolverDecrecimiento extends GameSolver {
   
   
   //factor()
-  //TODO Returns 1 or 2 if weird conditions are met.
+  //This function has its use to favor the zig-zag form of the grid rather than chains
+  //that have a random path in the grid.
+  //Basicaly we define the mayor orientation of the zig-zag by the orientation of the
+  //lines it contains.
+  //If we are moving in the direction of the zig-zag and we haven't broken the zig-zag
+  //(moved in a different direction), then we return a factor of 2.
+  //In the other case we return a factor of 1 (no preference).
+  //If the chain in of the form 128-64 and there are 2 possible ways, on in zig-zag with
+  //a value of 32 and another way with the value 32, we will chose the way in zig-zag.
+  //The added sum in zig-zag will be 128*2+64*2+32*2
+  //The added sum in not zig-zag will be 128*2+64*2+32*1
+  //So we will preffer the zig-zag way over the other one.
   int factor(int currentx, int currenty, GridCoordinates cell, bool first, bool breakZigZag) {
     if(breakZigZag) {
       return 1;
       
-    } else if (first) {
-      _globalDirectionX = currentx.abs(); 
-      _globalDirectionY = currenty.abs();
+    } else if (first) { //Set the current direction of the zig-zag.
+      _globalDirectionX = currentx; 
+      _globalDirectionY = currenty;
       return 2;
     
     } else if (isCornered(cell)) {
+      //This is used to keep the zig-zag after the first corner, 
+      //if we go further it will not work. Good aproximation to
+      //get 2048 as we only have one turn in the zig-zag to reach
+      //it.
       return 2;
       
-    } else if(currentx.abs() == _globalDirectionX && currenty.abs() == _globalDirectionY) {
+    } else if(currentx == _globalDirectionX && currenty == _globalDirectionY) {
       return 2;
     
     } else {
