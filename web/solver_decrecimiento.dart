@@ -425,9 +425,9 @@ class SolverDecrecimiento extends GameSolver {
   //(moved in a different direction), then we return a factor of 2.
   //In the other case we return a factor of 1 (no preference).
   //If the chain in of the form 128-64 and there are 2 possible ways, on in zig-zag with
-  //a value of 32 and another way with the value 32, we will chose the way in zig-zag.
-  //The added sum in zig-zag will be 128*2+64*2+32*2
-  //The added sum in not zig-zag will be 128*2+64*2+32*1
+  //a value of 32 and another way with the value 64, we will chose the way in zig-zag.
+  //The added sum in zig-zag will be 128*2+64*2+32*2=448
+  //The added sum in not zig-zag will be 128*2+64*2+64-1=447
   //So we will preffer the zig-zag way over the other one.
   int factor(int currentx, int currenty, GridCoordinates cell, bool first, bool breakZigZag) {
     if(breakZigZag) {
