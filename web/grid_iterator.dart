@@ -71,14 +71,14 @@ class GridIterator {
   //getCellValue()
   int getCellValue() {
     GridCoordinates c = getGridCoordinates();
-    return _grid.getValue(c.x, c.y);
+    return _grid.getValue(c);
   }
   
   
   //setCellValue()
   void setCellValue(int value) {    
     GridCoordinates c = getGridCoordinates();
-    _grid.setValue(c.x, c.y, value);
+    _grid.setValue(c, value);
   }
   
   

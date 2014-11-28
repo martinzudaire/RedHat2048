@@ -1,6 +1,7 @@
 library grid;
 
 import 'matrix.dart';
+import 'grid_coordinates.dart';
 
 ///
 /// GRID
@@ -31,27 +32,45 @@ class Grid {
   }
     
   
-  //getValue()
-  int getValue(int x, int y) {
-    if (!isOutOfBounds(x,y)) {
+  //getValueXY()
+  int getValueXY(int x, int y) {
+    if (!isOutOfBoundsXY(x,y)) {
       return _grid.getValue(x, y);
     } else {
       return -1;
     }
   }
   
+
+  //getValue()
+  int getValue(GridCoordinates coordinates) {
+    return getValueXY(coordinates.x, coordinates.y);
+  }
   
-  //setValue()
-  void setValue(int x, int y, int value) {
-    if (!isOutOfBounds(x,y)) {
+  
+  //setValueXY()
+  void setValueXY(int x, int y, int value) {
+    if (!isOutOfBoundsXY(x,y)) {
       _grid.setValue(x, y, value);
     }
   }
   
   
+  //setValue()
+  void setValue(GridCoordinates coordinates, int value) {
+    setValueXY(coordinates.x, coordinates.y, value);
+  }
+  
+  
   //isOutOfBounds()
-  bool isOutOfBounds(int x, int y) {
+  bool isOutOfBoundsXY(int x, int y) {
     return !(x>=0 && x<4 && y>=0 && y<4);
+  }
+  
+  
+  //isOutOfBounds()
+  bool isOutOfBounds(GridCoordinates coordinates) {
+    return isOutOfBoundsXY(coordinates.x, coordinates.y);
   }
   
   
